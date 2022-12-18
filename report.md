@@ -114,12 +114,52 @@ As Covid-19 threats gradually becomes a normality, it is a must to consider how 
     $\Sigma_{k \in K}\Sigma_{c \in C}\pi_{c}b_{kcs}$:(SHC) Shortage costs at AAs under a scenario (response phase).
 - Objectives
 
-
-
-
+    1. Objective 1: minimize the total costs
+    $SC + TC_{pre} + TC_{post}+ IC + SHC$
+    2. Objective 2: maximize the total satisfaction; i.e., minimize the shortage costs of the least satisfied AA under all scenarios.
+    $\Sigma_{s \in S}p_s(\Sigma_{c \in C}\max_{k \in K}{b_{cks}})$
 
 - Constraints
+
+    (1)
+        <!-- LHS: (prep) from i to j + (response) procured from i to j, from other rdc to this rdc j-->
+    <!-- RHS: RDC j sends to other AAs amount-->
+    <!-- (24) -->
     $$
+    \Sigma_{i \in I} X_{ijcs} + \rho\Sigma_{i \in I}Q_{ijc} + {\color{green}\Sigma_{j' \neq j}{Y_{jj'cs}}\alpha_{j'}\beta_{j'}} - \Sigma_{k \in K}Y_{jkcs}(\alpha_j + \beta_j) = \delta_{jcs} \\ \forall j \in J, \forall c \in C, \forall s \in S
+    $$
+    (2)
+    <!-- (25)- -->
+    <!-- 從rdc j 送到AA k 的貨 = k's inventory - k's shortage -->
+    $$(\Sigma_{j \in J}Y_{jkcs} (\alpha_j + \beta_j)) -  D_{kcs} = I_{kcs} - b_{kcs} \\ \forall k \in K/K' \forall c \in C, \forall s \in S$$
+
+    <!-- 從cs j 送special AA k' 的貨 = k' 's inventory - k' 's shortage -->
+    $$\color{green} (\Sigma_{j \in J}Y_{jk'cs} (\alpha_j + \beta_j)) -  D_{k'cs} = I_{k'cs} - b_{k'cs} \\ \forall k' \in K' \forall c \in C, \forall s \in S$$
+
+
+    (3)
+    <!-- (26) -->
+    <!-- j is a RDC or a CS and k is a low-risk AA <=> j can send stuffs to k -->
+    $$Y_{jkcs} \leq M(\alpha_j + \beta_j)D_{kcs}c \\ \forall j \in J, \forall k \in K/K', \forall c \in C, \forall s \in S$$
+    <!-- j is a cs and k' is a high-risk AA <=> j can send commods to k'-->
+    $$\color{green} Y_{jk'cs} \leq M\beta_jD_{k'cs} \forall j \in J, \\ \forall k' \in K', \forall c \in C, \forall s \in S$$
+
+    (4)
+    <!-- (28) -->
+
+    $$\Sigma_{i \in I} {X_{ijcs} \leq M(\alpha_j + \beta_j)} \\ \forall j \in J, \forall c \in C, \forall s \in S$$
+
+    (5)
+    <!-- (30) -->
+
+    $$
+    \Sigma_{i \in I}\Sigma_{c \in C} v_cQ_{ijc} \leq CapSize^R \cdot \alpha_j \forall j \in J
+    $$
+    $$
+    \Sigma_{i \in I}\Sigma_{c \in C} v_cQ_{ijc} \leq CapSize^C \cdot \beta_j \forall j \in J
+    $$
+
+    (6) 
 
 
 ### Deterministic Modeling
