@@ -50,21 +50,14 @@ As Covid-19 threats gradually becomes a normality, it is a must to consider how 
 
 - Sets and Indices
 
-    $I$: Suppliers
-
-    $J$: Candidate points for RDCs and CCs
-
-    $K$: Affected Areas
-
-    $I$, $J$ and $K$ are disjoint sets. For each $j \in J$, it is could be an RDC, or a CS, or none of the above, just an empty point.
-
-    $K'$: High-risk Affected Areas; Affected Areas that only receive commodities transported by CSs.
-
-    $K/K'$: Low-risk Affected Areas; Affected Areas that only receive commodities transported by RDCs.
-
-    $C$: Commodity Types.
-
-    $S$: Possible scenarios (discrete).
+    - $I$: Suppliers
+    - $J$: Candidate points for RDCs and CCs
+    - $K$: Affected Areas
+    - $I$, $J$ and $K$ are disjoint sets. For each $j \in J$, it is could be an RDC, or a CS, or none of the above, just an empty point.
+    - $K'$: High-risk Affected Areas; Affected Areas that only receive commodities transported by CSs.
+    - $K/K'$: Low-risk Affected Areas; Affected Areas that only receive commodities transported by RDCs.
+    - $C$: Commodity Types.
+    - $S$: Possible scenarios (discrete).
 
 
 
@@ -72,51 +65,51 @@ As Covid-19 threats gradually becomes a normality, it is a must to consider how 
 
     (Deterministic Parameters)
 
-    $F^R$: fixed setup cost for RDCs.
-    $F^C$: fixed setup cost for CSs.
-    $C_{ijc}$: transportation cost from supplier $i$ to candidate point $j$ with commodity $c$.
-    $h_{kc}$: inventory holding cost for commodity $c$ at AA $k$.
-    $\pi_{c}$: inventory shortage cost for commdotiy $c$.
-    $v_{c}$: required unit space for commodity $c$.
-    $S_ic$: amount of commodity $c$ supplied by supplier $i$.
-    M: a large number
+    - $F^R$: fixed setup cost for RDCs.
+    - $F^C$: fixed setup cost for CSs.
+    - $C_{ijc}$: transportation cost from supplier $i$ to candidate point $j$ with commodity $c$.
+    - $h_{kc}$: inventory holding cost for commodity $c$ at AA $k$.
+    - $\pi_{c}$: inventory shortage cost for commdotiy $c$.
+    - $v_{c}$: required unit space for commodity $c$.
+    - $S_ic$: amount of commodity $c$ supplied by supplier $i$.
+    - M: a large number
 
     (Stochastic Parameters)
 
-    $p_s$: occurrence of probability of scenario $s \ in S$.
-    $C_{ijcs}$: transportation cost from supplier $i$ to candidate point $j$ with commodity $c$ under scenario $s$\
-    $C_{jkcs}$: transportation cost from candidate point $j$ to AA $k$ with commodity $c$ under scenario $s$.
-    $D_{kcs}$: amount of demand of commodity $c$ under scenario $s$.
-    $\rho_{jcs}$: fraction of stocked materials of commodity $c$ remains usable at candidate point $j$ under scenario $s$ ($0 \leq \rho_{jcs} \leq 1$)
-    $\rho_{ics}$: fraction of stokced materials of commodity $c$ remains usdables at supplier $i$ under scenario $s$ ($0 \leq \rho_{ics} \leq 1$)
+    - $p_s$: occurrence of probability of scenario $s \ in S$.
+    - $C_{ijcs}$: transportation cost from supplier $i$ to candidate point $j$ with commodity $c$ under scenario $s$\
+    - $C_{jkcs}$: transportation cost from candidate point $j$ to AA $k$ with commodity $c$ under scenario $s$.
+    - $D_{kcs}$: amount of demand of commodity $c$ under scenario $s$.
+    - $\rho_{jcs}$: fraction of stocked materials of commodity $c$ remains usable at candidate point $j$ under scenario $s$ ($0 \leq \rho_{jcs} \leq 1$)
+    - $\rho_{ics}$: fraction of stokced materials of commodity $c$ remains usdables at supplier $i$ under scenario $s$ ($0 \leq \rho_{ics} \leq 1$)
 
 - Decision Variables
 
-    $Q_{ijc}$: amount of commodity $c$ supplied by supplier $i$, stored at candidate point $j$.
-    $X_{ijcs}$: amount of commodity $c$ transferred from supplier $i$ to candidate point $j$ under scenario $s$. If $X_{ijcs} > 0, j$ must be either an RDC or a CS.
-    $Y_{jkcs}$: amount of commodity $c$ transferred from candidate point $j$ to AA $k$ under scenario $s$. If $Y_{jkcs} > 0, j$ must be either an RDC or a CS.
-
-    $Y'_{j'jcs}$: amount of commodity $c$ transferred from candidate point $j'$ to another candidate point $j$ under scenario $s$. If $j' = j$, then $Y'_{j'jcs} = 0$.
-    $I_{kcs}$: amount of inventory of commodity $c$ held at AA $k$ under scenario $s$.
-    $b_{kcs}$: amount of shortage of commodity $c$ at AA $k$ under scenario $s$.
-    $\alpha_i$: if candidate point $j$ is an RDC, $\alpha_j = 1$; otherwise $=0$.
-    $\beta_j$: if candidate point $j$ is a CS, $\beta_j = 1$; otherwise $=0$.
+    - $Q_{ijc}$: amount of commodity $c$ supplied by supplier $i$, stored at candidate point $j$.
+    - $X_{ijcs}$: amount of commodity $c$ transferred from supplier $i$ to candidate point $j$ under scenario $s$. If $X_{ijcs} > 0, j$ must be either an RDC or a CS.
+    - $Y_{jkcs}$: amount of commodity $c$ transferred from candidate point $j$ to AA $k$ under scenario $s$. If $Y_{jkcs} > 0, j$ must be either an RDC or a CS.
+    - $Y'_{j'jcs}$: amount of commodity $c$ transferred from candidate point $j'$ to another candidate point $j$ under scenario $s$. If $j' = j$, then $Y'_{j'jcs} = 0$.
+    - $I_{kcs}$: amount of inventory of commodity $c$ held at AA $k$ under scenario $s$.
+    - $b_{kcs}$: amount of shortage of commodity $c$ at AA $k$ under scenario $s$.
+    - $\alpha_i$: if candidate point $j$ is an RDC, $\alpha_j = 1$; otherwise $=0$.
+    - $\beta_j$: if candidate point $j$ is a CS, $\beta_j = 1$; otherwise $=0$.
 
 - Mathematical Formulations
 
     These are defined for convenience and the simplicity in objective functions.
-    $\Sigma_{j \in J}(F^R\alpha_j + F^C\beta_j)$: (SC) Setup Cost for RDCs and CSs
-    $\Sigma_{i\in I}\Sigma_{j \in J}\Sigma_{c \in C}C_{ijc}Q_{ijc}$: Transportation Cost from suppliers to RDCs and CSs (preparedness phase).
 
-    $\Sigma_{i\in I}\Sigma_{j \in J}\Sigma_{c \in C}C_{ijcs}X_{ijcs}$:(TC-pre) Transportation Cost from suppliers to RDCs and CSs under a scenario (response phase).
-    $\Sigma_{i\in I}\Sigma_{k \in K}\Sigma_{c \in C}C_{jkcs}Y_{jkcs}$:(TC-post)Transportation Cost from RDCs and CSs to AAs under a scenario (response phase).
-    $\Sigma_{k \in k}\Sigma_{c \in C}h_{kc}I_{kcs}$:(IC) Inventory holding costs at AAs under a scenario (response phase).
-    $\Sigma_{k \in K}\Sigma_{c \in C}\pi_{c}b_{kcs}$:(SHC) Shortage costs at AAs under a scenario (response phase).
+    - $\Sigma_{j \in J}(F^R\alpha_j + F^C\beta_j)$: (SC) Setup Cost for RDCs and CSs
+    - $\Sigma_{i\in I}\Sigma_{j \in J}\Sigma_{c \in C}C_{ijc}Q_{ijc}$: Transportation Cost from suppliers to RDCs and CSs (preparedness phase).
+    - $\Sigma_{i\in I}\Sigma_{j \in J}\Sigma_{c \in C}C_{ijcs}X_{ijcs}$:(TC-pre) Transportation Cost from suppliers to RDCs and CSs under a scenario (response phase).
+    - $\Sigma_{i\in I}\Sigma_{k \in K}\Sigma_{c \in C}C_{jkcs}Y_{jkcs}$:(TC-post)Transportation Cost from RDCs and CSs to AAs under a scenario (response phase).
+    - $\Sigma_{k \in k}\Sigma_{c \in C}h_{kc}I_{kcs}$:(IC) Inventory holding costs at AAs under a scenario (response phase).
+    - $\Sigma_{k \in K}\Sigma_{c \in C}\pi_{c}b_{kcs}$:(SHC) Shortage costs at AAs under a scenario (response phase).
+
 - Objectives
 
-    1. Objective 1: minimize the total costs
+    - Objective 1: minimize the total costs
     $SC + TC_{pre} + TC_{post}+ IC + SHC$
-    2. Objective 2: maximize the total satisfaction; i.e., minimize the shortage costs of the least satisfied AA under all scenarios.
+    - Objective 2: maximize the total satisfaction; i.e., minimize the shortage costs of the least satisfied AA under all scenarios.
     $\Sigma_{s \in S}p_s(\Sigma_{c \in C}\max_{k \in K}{b_{cks}})$
 
 - Constraints
@@ -159,7 +152,7 @@ As Covid-19 threats gradually becomes a normality, it is a must to consider how 
     \Sigma_{i \in I}\Sigma_{c \in C} v_cQ_{ijc} \leq CapSize^C \cdot \beta_j \forall j \in J
     $$
 
-    (6) 
+    (6)
 
 
 ### Deterministic Modeling
