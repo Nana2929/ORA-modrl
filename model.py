@@ -1,5 +1,6 @@
+#%%
 import pandas as pd
-from gurobi import *
+from gurobipy import *
 from util import to_range, EXP_PATH, DATA_PATH
 
 PATH_PREFIX = 'MoDRL_'
@@ -10,8 +11,10 @@ df_demand = pd.read_csv(DATA_PATH + f'/{PATH_PREFIX}demand.csv').drop('DP', axis
 df_remains_usable = pd.read_csv(DATA_PATH + f'/{PATH_PREFIX}remains_usable.csv').drop('Node', axis=1)
 
 # supplier -> RDC / CS -> AA
-model = Model('Disaster relief logistic model')
+model = Model('Disaster relief logistic model: Deterministic')
 model.ModelSense = GRB.MINIMIZE
+model.setParam("NonConvex", 2);
+
 
 W1 = 0.4  # weight of objective 1 (total cost)
 M = 10**1e1  # a large number
@@ -27,7 +30,7 @@ SET = dict(
     C=[c for c in range(df_supplier.shape[1])]  # set of commodities (c)
 )
 
-# the deviation (δ) is indicating an increased commodity inventory penalized
+# the deviation (δ) indicates an increased commodity inventory penalized
 # by the last term of the first objective function
 DELTA = [[0 for j in to_range(SET['C'])] for c in to_range(SET['J'])]
 
@@ -54,14 +57,22 @@ PARAMETER = dict(
 i, j, k, k_prime, c = [len(idx) for idx in SET.values()]
 J_prime = [j_prime for j_prime in to_range(SET['J'])]  # j′ is a subset of `J`
 
+# Qijc: Amount of commodity c supplied by supplier i to RDC / CS j
 Q = model.addVars(i, j, c, lb=0, vtype=GRB.CONTINUOUS, name='Q')
+# Xijcs: Amount of c transferred from Suppkier i to RDC / CS j under scenario s
 X = model.addVars(i, j, c, lb=0, vtype=GRB.CONTINUOUS, name='X')
+# Yjkcs: Amount of c transferred from RDC / CS j to AA k under scenario s
 Y = model.addVars(j, k, c, lb=0, vtype=GRB.CONTINUOUS, name='Y')
+# Y'_jj'cs: Amount of c transferred from RDC / CS j to RDC / CS j under scenario s
 Y_prime = model.addVars(len(J_prime), j, c, lb=0, vtype=GRB.CONTINUOUS, name='Y')
+# Ikcs: Amount of inventory c held at AA k under scenario s
 I = model.addVars(k, c, lb=0, vtype=GRB.CONTINUOUS, name='I')
+# bkcs: Amount of shortage of c at AA k under scenario s
 b = model.addVars(k, c, lb=0, vtype=GRB.CONTINUOUS, name='b')
-alpha = model.addVars(j, vtype=GRB.BINARY, name='alpha')  # if j is an RDC
-beta = model.addVars(j, vtype=GRB.BINARY, name='beta')  # if j is a CS
+# if j is an RDC
+alpha = model.addVars(j, vtype=GRB.BINARY, name='alpha')
+# if j is a CS
+beta = model.addVars(j, vtype=GRB.BINARY, name='beta')
 
 # defined for linearize or Gurobi limited
 # reference: https://support.gurobi.com/hc/en-us/community/posts/4408734183185-TypeError-unsupported-operand-type-s-for-int-and-GenExpr-
@@ -167,3 +178,22 @@ model.addConstrs((
 ), 'c-j_disjoint')
 
 model.optimize()
+
+# %%
+# variables
+# i, j, k, k_prime, c = [len(idx) for idx in SET.values()]
+# J_prime = [j_prime for j_prime in to_range(SET['J'])]  # j′ is a subset of `J`
+
+# Q = model.addVars(i, j, c, lb=0, vtype=GRB.CONTINUOUS, name='Q')
+# X = model.addVars(i, j, c, lb=0, vtype=GRB.CONTINUOUS, name='X')
+# Y = model.addVars(j, k, c, lb=0, vtype=GRB.CONTINUOUS, name='Y')
+# Y_prime = model.addVars(len(J_prime), j, c, lb=0, vtype=GRB.CONTINUOUS, name='Y')
+# I = model.addVars(k, c, lb=0, vtype=GRB.CONTINUOUS, name='I')
+# b = model.addVars(k, c, lb=0, vtype=GRB.CONTINUOUS, name='b')
+# alpha = model.addVars(j, vtype=GRB.BINARY, name='alpha')  # if j is an RDC
+# beta = model.addVars(j, vtype=GRB.BINARY, name='beta')  # if j is a CS
+# %%
+# print(Q) #Qijc
+print(Y_prime)
+
+# %%
