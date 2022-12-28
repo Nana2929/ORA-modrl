@@ -1,6 +1,7 @@
-#%%
+# %%
 import os
 import pandas as pd
+from enum import Enum
 
 EXP_PATH = os.path.abspath(os.path.join(
     os.path.abspath(__file__),
@@ -21,10 +22,9 @@ def to_range(l):
     return range(len(l))
 
 
-
 def getSupplierAADistance(
-    distance_info_path,
-    supplier_info_path,
+        distance_info_path,
+        supplier_info_path,
 ):
     # supplier: AA distance
     distance = pd.read_csv(distance_info_path, index_col=0)
@@ -37,6 +37,10 @@ def getSupplierAADistance(
         sup_dists = distance[sup_name]
         all_dists[i] = sup_dists.tolist()
     return all_dists
-# getSupplierAADistance()
+
+
+class OptimizationMethod(Enum):
+    WEIGHTED_SUM = 1
+    LP_METRIC = 2
 
 # %%
