@@ -1,6 +1,6 @@
 import pandas as pd
 from gurobipy import *
-from util import to_range, EXP_PATH, DATA_PATH, getSupplierAADistance
+from util import to_range, DATA_PATH, getSupplierAADistance, OptimizationMethod
 
 PATH_PREFIX = 'MoDRL_'
 df_supplier = pd.read_csv(DATA_PATH + f'/{PATH_PREFIX}supplier.csv').drop('Suppliers', axis=1)
@@ -11,42 +11,27 @@ df_remains_usable = pd.read_csv(DATA_PATH + f'/{PATH_PREFIX}remains_usable.csv')
 df_distance = pd.read_csv(DATA_PATH + f'/{PATH_PREFIX}distance.csv')
 assert df_remains_usable.shape[1] == df_distance.shape[0]
 
-'''
-nObj = 2
-for o in range(nObj):
-    # Set which objective we will query
-    model.params.ObjNumber = o
-    # Query the o-th objective value
-    print(' ',model.ObjNVal, end='')
-
-LinExpr.getValue()
-'''
+opt_method = OptimizationMethod.LP_METRIC
 
 # supplier -> RDC / CS -> AA
 model = Model('Disaster relief logistic model: Deterministic')
 model.ModelSense = GRB.MINIMIZE
-model.setParam("NonConvex", 2);
+model.setParam('NonConvex', 2)
 
-
-W1 = 0.1 # weight of objective 1 (total cost)
-M = 10**1e1  # a large number
+W1 = 0.1  # weight of objective 1 (total cost)
+M = 10 ** 1e1  # a large number
 EPSILON = (df_demand.shape[1] // 2 // 2) + 1  # a limit on the number of CS
 
 # sets / indices
-
 # Here J, K are the same point sets
-
-
 SET = dict(
-    I=[i for i in range(df_supplier.shape[0])],             # set of suppliers (i)
-    J=[j for j in range(df_demand.shape[1] // 2)],          # candidates of RDC or CS (j)
-    K=[k for k in range(df_demand.shape[1] // 2 + 1)],      # set of AA (k)
-    Kh=[k for k in range(df_demand.shape[1] // 2 // 2)],    # set of high-risk AA (`Kh` is a subset of `K`) (k′)
+    I=[i for i in range(df_supplier.shape[0])],  # set of suppliers (i)
+    J=[j for j in range(df_demand.shape[1] // 2)],  # candidates of RDC or CS (j)
+    K=[k for k in range(df_demand.shape[1] // 2 + 1)],  # set of AA (k)
+    Kh=[k for k in range(df_demand.shape[1] // 2 // 2)],  # set of high-risk AA (`Kh` is a subset of `K`) (k′)
     # S=[], # set of possible scenarios (s)
     C=[c for c in range(df_supplier.shape[1])]  # set of commodities (c)
 )
-
-
 
 # the deviation (δ) indicates an increased commodity inventory penalized
 # by the last term of the first objective function
@@ -60,20 +45,24 @@ PARAMETER = dict(
     CAP_SIZE_a=df_setup_cost.iloc[1, 2],  # capacity limit for an AA
     Fr=df_setup_cost.iloc[0, 1],  # fixed setup cost for an RDC
     Fc=df_setup_cost.iloc[2, 1],  # fixed setup cost fo an CS
-    AADist = df_distance.to_numpy(),  # distance between nodes
-    SupAADist = getSupplierAADistance(
+    AADist=df_distance.to_numpy(),  # distance between nodes
+    SupAADist=getSupplierAADistance(
         distance_info_path=DATA_PATH + f'/{PATH_PREFIX}distance.csv',
         supplier_info_path=DATA_PATH + f'/{PATH_PREFIX}supplier.csv',
     ),
-    Ci=[[tuple(df_commodity['transport'].tolist()) for _ in to_range(SET['J'])] for _ in range(df_supplier.shape[0])],  # transportation cost from supplier `i` to RDC / CS `j` for commodity `c`
-    Cj=[[tuple(df_commodity['transport'].tolist()) for _ in to_range(SET['K'])] for _ in to_range(SET['J'])],  # transportation cost from RDC / CS `j` to AA `k` for commodity `c`
-    h=[tuple(round(df_commodity['procure'] * 0.3, 3)) for _ in to_range(SET['K'])],  # inventory holding cost for commodity `c` at AA `k`
+    Ci=[[tuple(df_commodity['transport'].tolist()) for _ in to_range(SET['J'])] for _ in range(df_supplier.shape[0])],
+    # transportation cost from supplier `i` to RDC / CS `j` for commodity `c`
+    Cj=[[tuple(df_commodity['transport'].tolist()) for _ in to_range(SET['K'])] for _ in to_range(SET['J'])],
+    # transportation cost from RDC / CS `j` to AA `k` for commodity `c`
+    h=[tuple(round(df_commodity['procure'] * 0.3, 3)) for _ in to_range(SET['K'])],
+    # inventory holding cost for commodity `c` at AA `k`
     PI=tuple(round(df_commodity['procure'] * 0.6, 3)),  # inventory shortage cost for commodity `c`
     v=df_commodity['volume'].tolist(),  # required unit space for commodity `c`
     D=[(tuple(map(int, d.split(', ')))) for d in df_demand.iloc[0, 1:]],  # amount of demand for commodity `c` at AA `k`
-    S=list(df_supplier.itertuples(index=False, name=None)),  # amount of commodity `c` that could be supplied from supplier `i`
+    S=list(df_supplier.itertuples(index=False, name=None)),
+    # amount of commodity `c` that could be supplied from supplier `i`
     RHOj=0.26,  # fraction of stocked material of commodity `c` remains usable at RDC / CS `j` (0 <= RHOj <= 1)
-    RHOi=0.26   # fraction of stocked material of commodity `c` remains usable at supplier `i` (0 <= RHOi <= 1)
+    RHOi=0.26  # fraction of stocked material of commodity `c` remains usable at supplier `i` (0 <= RHOi <= 1)
 )
 
 # variables
@@ -123,16 +112,26 @@ ICs = quicksum(PARAMETER['h'][k][c] * I[k, c] for k in to_range(SET['K']) for c 
 SCs = quicksum(PARAMETER['PI'][c] * b[k, c] for k in to_range(SET['K']) for c in to_range(SET['C']))
 
 # objective function
-model.setObjectiveN(SC + TC + TCs + TCRCs + ICs + SCs, index=0, weight=W1, name='Cost')
-model.setObjectiveN(quicksum(b_linearize),
-                    index=1, weight=1 - W1, name='Satisfaction measure')
+# single objective 1 -> 9631.5
+# single objective 2 -> 567631.946
+obj1 = SC + TC + TCs + TCRCs + ICs + SCs
+obj2 = quicksum(b_linearize)
+if opt_method == OptimizationMethod.WEIGHTED_SUM:
+    model.setObjectiveN(obj1, index=0, weight=W1, name='Cost')
+    model.setObjectiveN(obj2, index=1, weight=1 - W1, name='Satisfaction measure')
+elif opt_method == OptimizationMethod.LP_METRIC:
+    single_objval = (9631.5, 567631.946)
+    combined_obj = (W1 * ((obj1 - single_objval[0]) / single_objval[0])) + \
+                   ((1 - W1) * ((obj2 - single_objval[1]) / single_objval[1]))
+
+    model.setObjective(combined_obj)
 
 # constraints
 # structure reference: https://or.stackexchange.com/questions/1508/common-structures-in-gurobi-python
 model.addConstrs((
     quicksum(X[i, j, c] for i in to_range(SET['I'])) +
     PARAMETER['RHOj'] * quicksum(Q[i, j, c] for i in to_range(SET['I'])) +
-    quicksum(Y[j, j_prime, c] * j_disjoint[j, j_prime] for j_prime in to_range(J_prime) if j_prime != j) -  # puzzled: Y or Y′
+    quicksum(Y[j, j_prime, c] * j_disjoint[j, j_prime] for j_prime in to_range(J_prime) if j_prime != j) -
     quicksum(Y[j, k, c] for k in to_range(SET['K'])) * (alpha[j] + beta[j])
     == DELTA[j][c] for j in to_range(SET['J']) for c in to_range(SET['C'])
 ), 'c-24')
@@ -209,4 +208,5 @@ model.addConstrs((
 
 model.optimize()
 
+print(f'Objective value: {model.objVal}')
 # %%
