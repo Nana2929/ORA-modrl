@@ -15,6 +15,12 @@ DATA_PATH = os.path.abspath(os.path.join(
     'data'
 ))
 
+FIG_PATH = os.path.abspath(os.path.join(
+    os.path.abspath(__file__),
+    os.pardir,
+    'figures'
+))
+
 PATH_PREFIX = 'MoDRL_'
 
 
