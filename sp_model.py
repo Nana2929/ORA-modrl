@@ -137,8 +137,8 @@ def solve(weight=0.01, opt_method=OptimizationMethod.LP_METRIC):
         ScCostMap[s] = ScenarioCost
 
     # objective function
-    # single objective 1 -> 7308.45125
-    # single objective 2 -> 189188.33067374982
+    # single-objective 1 -> 7308.45125
+    # single-objective 2 -> 189188.33067374982 (setObjectiveN -> model.objVal) or 1363.9199999999998 (best value)
     obj1 = SC + TC + quicksum(ScCostMap[s] * PARAMETER['SP'][s] for s in to_range(SET['S']))
     obj2 = quicksum(
         quicksum(b_linearize[s, c] for c in to_range(SET['C'])) * PARAMETER['SP'][s] for s in to_range(SET['S']))
@@ -146,11 +146,16 @@ def solve(weight=0.01, opt_method=OptimizationMethod.LP_METRIC):
         model.setObjectiveN(obj1, index=0, weight=W1, name='Cost')
         model.setObjectiveN(obj2, index=1, weight=1 - W1, name='Satisfaction measure')
     elif opt_method == OptimizationMethod.LP_METRIC:
-        single_objval = (7308.45125, 189188.33067374982)
-        combined_obj = (W1 * ((obj1 - single_objval[0]) / single_objval[0])) + \
-                       ((1 - W1) * ((obj2 - single_objval[1]) / single_objval[1]))
+        single_objval = (7308.45125, 1363.9199999999998)
 
-        model.setObjective(combined_obj)
+        model.setObjectiveN(((obj1 - single_objval[0]) / single_objval[0]), index=0, weight=W1, name='Cost')
+        model.setObjectiveN(((obj2 - single_objval[1]) / single_objval[1]), index=1, weight=1 - W1,
+                            name='Satisfaction measure')
+
+        # combined_obj = (W1 * ((obj1 - single_objval[0]) / single_objval[0])) + \
+        #                ((1 - W1) * ((obj2 - single_objval[1]) / single_objval[1]))
+        #
+        # model.setObjective(combined_obj)
 
     # constraints
     model.addConstrs((
@@ -242,15 +247,24 @@ def solve(weight=0.01, opt_method=OptimizationMethod.LP_METRIC):
 
     print(f'Objective value: {model.objVal}')
 
-    return model.objVal
+    return model
 
 
+# %%
 weights = [0.001 * i for i in range(1, 11)]
-obj_vals = [solve(w, OptimizationMethod.LP_METRIC) for w in weights]
-plt.plot(weights, obj_vals, linestyle='-', linewidth='2', markersize='16', marker='.')
+solvers = [solve(w, OptimizationMethod.LP_METRIC) for w in weights]
+plt.plot(weights, [s.objVal for s in solvers], linestyle='-', linewidth='2', markersize='16', marker='.')
 plt.xlabel('weight')
 plt.ylabel('objective value')
 plt.title('Stochastic model\'s solution under different weight (LP-metric)')
 plt.savefig(FIG_PATH + '/sp_lp-metric.png')
 plt.show()
 # %%
+weights = [0.001 * i for i in range(1, 11)]
+solvers = [solve(w, OptimizationMethod.WEIGHTED_SUM) for w in weights]
+plt.plot(weights, [s.objVal for s in solvers], linestyle='-', linewidth='2', markersize='16', marker='.')
+plt.xlabel('weight')
+plt.ylabel('objective value')
+plt.title('Stochastic model\'s solution under different weight (weighted sum)')
+plt.savefig(FIG_PATH + '/sp_ws.png')
+plt.show()

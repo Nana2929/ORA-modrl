@@ -118,18 +118,23 @@ def solve(weight=0.01, opt_method=OptimizationMethod.LP_METRIC):
 
     # objective function
     # single objective 1 -> 9631.5
-    # single objective 2 -> 567631.946
+    # single objective 2 -> 567631.946 (setObjectiveN -> model.objVal) or 586.3 (best value)
     obj1 = SC + TC + TCs + TCRCs + ICs + SCs
     obj2 = quicksum(b_linearize)
     if opt_method == OptimizationMethod.WEIGHTED_SUM:
         model.setObjectiveN(obj1, index=0, weight=W1, name='Cost')
         model.setObjectiveN(obj2, index=1, weight=1 - W1, name='Satisfaction measure')
     elif opt_method == OptimizationMethod.LP_METRIC:
-        single_objval = (9631.5, 567631.946)
-        combined_obj = (W1 * ((obj1 - single_objval[0]) / single_objval[0])) + \
-                       ((1 - W1) * ((obj2 - single_objval[1]) / single_objval[1]))
+        single_objval = (9631.5, 586.3)
 
-        model.setObjective(combined_obj)
+        model.setObjectiveN(((obj1 - single_objval[0]) / single_objval[0]), index=0, weight=W1, name='Cost')
+        model.setObjectiveN(((obj2 - single_objval[1]) / single_objval[1]), index=1, weight=1 - W1,
+                            name='Satisfaction measure')
+
+        # combined_obj = (W1 * ((obj1 - single_objval[0]) / single_objval[0])) + \
+        #                ((1 - W1) * ((obj2 - single_objval[1]) / single_objval[1]))
+        #
+        # model.setObjective(combined_obj)
 
     # constraints
     # structure reference: https://or.stackexchange.com/questions/1508/common-structures-in-gurobi-python
@@ -215,15 +220,24 @@ def solve(weight=0.01, opt_method=OptimizationMethod.LP_METRIC):
 
     print(f'Objective value: {model.objVal}')
 
-    return model.objVal
+    return model
 
 
+# %%
 weights = [0.001 * i for i in range(1, 11)]
-obj_vals = [solve(w, OptimizationMethod.LP_METRIC) for w in weights]
-plt.plot(weights, obj_vals, linestyle='-', linewidth='2', markersize='16', marker='.')
+solvers = [solve(w, OptimizationMethod.LP_METRIC) for w in weights]
+plt.plot(weights, [s.objVal for s in solvers], linestyle='-', linewidth='2', markersize='16', marker='.')
 plt.xlabel('weight')
 plt.ylabel('objective value')
-plt.title('Stochastic model\'s solution under different weight (LP-metric)')
+plt.title('Deterministic model\'s solution under different weight (LP-metric)')
 plt.savefig(FIG_PATH + '/dm_lp-metric.png')
 plt.show()
 # %%
+weights = [0.001 * i for i in range(1, 11)]
+solvers = [solve(w, OptimizationMethod.WEIGHTED_SUM) for w in weights]
+plt.plot(weights, [s.objVal for s in solvers], linestyle='-', linewidth='2', markersize='16', marker='.')
+plt.xlabel('weight')
+plt.ylabel('objective value')
+plt.title('Deterministic model\'s solution under different weight (weighted sum)')
+plt.savefig(FIG_PATH + '/dm_ws.png')
+plt.show()
