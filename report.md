@@ -77,7 +77,7 @@ As Covid-19 threats gradually becomes a normality, it is a must to consider how 
     (Stochastic Parameters)
 
     - $p_s$: occurrence of probability of scenario $s \ in S$.
-    - $C_{ijcs}$: transportation cost from supplier $i$ to candidate point $j$ with commodity $c$ under scenario $s$\
+    - $C_{ijcs}$: transportation cost from supplier $i$ to candidate point $j$ with commodity $c$ under scenario $s$.
     - $C_{jkcs}$: transportation cost from candidate point $j$ to AA $k$ with commodity $c$ under scenario $s$.
     - $D_{kcs}$: amount of demand of commodity $c$ under scenario $s$.
     - $\rho_{jcs}$: fraction of stocked materials of commodity $c$ remains usable at candidate point $j$ under scenario $s$ ($0 \leq \rho_{jcs} \leq 1$)
@@ -88,7 +88,7 @@ As Covid-19 threats gradually becomes a normality, it is a must to consider how 
     - $Q_{ijc}$: amount of commodity $c$ supplied by supplier $i$, stored at candidate point $j$.
     - $X_{ijcs}$: amount of commodity $c$ transferred from supplier $i$ to candidate point $j$ under scenario $s$. If $X_{ijcs} > 0, j$ must be either an RDC or a CS.
     - $Y_{jkcs}$: amount of commodity $c$ transferred from candidate point $j$ to AA $k$ under scenario $s$. If $Y_{jkcs} > 0, j$ must be either an RDC or a CS.
-    - $Y'_{j'jcs}$: amount of commodity $c$ transferred from candidate point $j'$ to another candidate point $j$ under scenario $s$. If $j' = j$, then $Y'_{j'jcs} = 0$.
+    <!-- - $Y'_{j'jcs}$: amount of commodity $c$ transferred from candidate point $j'$ to another candidate point $j$ under scenario $s$. If $j' = j$, then $Y'_{j'jcs} = 0$. -->
     - $I_{kcs}$: amount of inventory of commodity $c$ held at AA $k$ under scenario $s$.
     - $b_{kcs}$: amount of shortage of commodity $c$ at AA $k$ under scenario $s$.
     - $\alpha_i$: if candidate point $j$ is an RDC, $\alpha_j = 1$; otherwise $=0$.
@@ -113,46 +113,46 @@ As Covid-19 threats gradually becomes a normality, it is a must to consider how 
     $\Sigma_{s \in S}p_s(\Sigma_{c \in C}\max_{k \in K}{b_{cks}})$
 
 - Constraints
+    The green parts are highlighted to indicate the revised parts based on our series of contactless station settings.
 
-    (1)
-        <!-- LHS: (prep) from i to j + (response) procured from i to j, from other rdc to this rdc j-->
-    <!-- RHS: RDC j sends to other AAs amount-->
+    (1) **Control Balance Equation**: The amount of commodities sent from suppliers and other RDC/CS $j'$ to $j$ $-$ the amount $j$ sending out to other AA roughly equals to the amount of commodities transferred to AAs from the RDC $j$. If LHS is greater than the RHS, this inventory surplus is penalized by the first objective.
     <!-- (24) -->
+    <!-- Without j disjoint -->
     $$
-    \Sigma_{i \in I} X_{ijcs} + \rho\Sigma_{i \in I}Q_{ijc} + {\color{green}\Sigma_{j' \neq j}{Y_{jj'cs}}\alpha_{j'}\beta_{j'}} - \Sigma_{k \in K}Y_{jkcs}(\alpha_j + \beta_j) = \delta_{jcs} \\ \forall j \in J, \forall c \in C, \forall s \in S
+    \Sigma_{i \in I} X_{ijcs} + \rho\Sigma_{i \in I}Q_{ijc} - \Sigma_{k \in K}Y_{jkcs}(\alpha_j + \beta_j) = \delta_{jcs} \\ \forall j \in J, \forall c \in C, \forall s \in S
     $$
-    (2)
+    <!-- $$ With j_disjoint
+        \Sigma_{i \in I} X_{ijcs} + \rho\Sigma_{i \in I}Q_{ijc} + {\color{green}\Sigma_{j' \neq j}{Y_{jj'cs}}\alpha_{j'}\beta_{j'}} - \Sigma_{k \in K}Y_{jkcs}(\alpha_j + \beta_j) = \delta_{jcs} \\ \forall j \in J, \forall c \in C, \forall s \in S
+    $$ -->
+
+    (2) **Inventory Equality Constrain**t*: The amount of commodites from RDC/CS $j$ to AA $k -$ AA $k$'s demand should equal to $k$'s invnentory - $k$'s shortage. The revised part is the special case when $k$ is a special AA that could only receive commodites sent by a CS.
+
     <!-- (25)- -->
     <!-- 從rdc j 送到AA k 的貨 = k's inventory - k's shortage -->
     $$(\Sigma_{j \in J}Y_{jkcs} (\alpha_j + \beta_j)) -  D_{kcs} = I_{kcs} - b_{kcs} \\ \forall k \in K/K' \forall c \in C, \forall s \in S$$
-
     <!-- 從cs j 送special AA k' 的貨 = k' 's inventory - k' 's shortage -->
     $$\color{green} (\Sigma_{j \in J}Y_{jk'cs} (\alpha_j + \beta_j)) -  D_{k'cs} = I_{k'cs} - b_{k'cs} \\ \forall k' \in K' \forall c \in C, \forall s \in S$$
 
 
-    (3)
+    (3) **RDC/CS Transferability**: RDC/CS could transfer commodity to other nodes only if there exists another RDC/CS/AA.
     <!-- (26) -->
     <!-- j is a RDC or a CS and k is a low-risk AA <=> j can send stuffs to k -->
     $$Y_{jkcs} \leq M(\alpha_j + \beta_j)D_{kcs}c \\ \forall j \in J, \forall k \in K/K', \forall c \in C, \forall s \in S$$
     <!-- j is a cs and k' is a high-risk AA <=> j can send commods to k'-->
     $$\color{green} Y_{jk'cs} \leq M\beta_jD_{k'cs} \forall j \in J, \\ \forall k' \in K', \forall c \in C, \forall s \in S$$
-
-    (4)
     <!-- (28) -->
 
     $$\Sigma_{i \in I} {X_{ijcs} \leq M(\alpha_j + \beta_j)} \\ \forall j \in J, \forall c \in C, \forall s \in S$$
 
-    (5)
+    (5) **Capacity Limit Constraint**: the amount of commodities sent from upplier $i$ to RDC $j$ should not exceed the capacity of the RDC. Similarly, the amount of commodities sent from supplier $i$ to CS $j$ should not exceed the capacity of the CS.
     <!-- (30) -->
 
     $$
-    \Sigma_{i \in I}\Sigma_{c \in C} v_cQ_{ijc} \leq CapSize^R \cdot \alpha_j \forall j \in J
-    $$
-    $$
+    \Sigma_{i \in I}\Sigma_{c \in C} v_cQ_{ijc} \leq CapSize^R \cdot \alpha_j \forall j \in J\\
     \Sigma_{i \in I}\Sigma_{c \in C} v_cQ_{ijc} \leq CapSize^C \cdot \beta_j \forall j \in J
     $$
 
-    (6)
+    (6) 
 
 
 ### Deterministic Modeling
@@ -164,5 +164,11 @@ As Covid-19 threats gradually becomes a normality, it is a must to consider how 
 ### Results
 
 #### Data
+We use the data from the case study in Amiri's paper. According to the paper, they use a well-populated region of Iran located near sourthern Central Alborz, with several active faults surrounding. We consider 5 suppliers Sari, Qazvin, Tehran, Arak and Isfahan, 15 demand points,
 
 
+![alt text](./figures/data/delta_remains_usable.png)
+![alt text](./figures/data/demand_under_scenario.png)
+![alt text](./figures/data/supplier_capacity.png)
+![alt text](./figures/data/distance.png )
+<img src="./figures/data/setup_cost.png" width="200" />
