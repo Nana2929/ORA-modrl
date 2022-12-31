@@ -111,12 +111,6 @@ In brief, we would like to mainly follow Amiri's paper formulation and multi-obj
     - $\Sigma_{k \in k}\Sigma_{c \in C}h_{kc}I_{kcs}$:(IC) Inventory holding costs at AAs under a scenario (response phase).
     - $\Sigma_{k \in K}\Sigma_{c \in C}\pi_{c}b_{kcs}$:(SHC) Shortage costs at AAs under a scenario (response phase).
 
-- Objectives
-
-    - Objective 1: minimize the total costs
-    $SC + TC_{pre} + TC_{post}+ IC + SHC$
-    - Objective 2: maximize the total satisfaction; i.e., minimize the shortage costs of the least satisfied AA under all scenarios.
-    $\Sigma_{s \in S}p_s(\Sigma_{c \in C}\max_{k \in K}{b_{cks}})$
 
 - Constraints
     The green parts are highlighted to indicate the revised parts from Amiri's paper.
@@ -177,19 +171,47 @@ In brief, we would like to mainly follow Amiri's paper formulation and multi-obj
     $$
     \color{green} \Sigma_{j \in J} \beta_j \leq \epsilon
     $$
+- Objectives
+
+    - Objective 1: minimize the total costs
+    $SC + TC_{pre} + TC_{post}+ IC + SHC$
+    - Objective 2: maximize the total satisfaction; i.e., minimize the shortage costs of the least satisfied AA under all scenarios.
+    $\Sigma_{s \in S}p_s(\Sigma_{c \in C}\max_{k \in K}{b_{cks}})$
+
+### Implementation Details
+We decide to solve the problem using Gurobi Optimization solver with the academic license. The environment is Gurobi 10.0.0 with Python 3.7.12 under the *Linux x86_64 system with 12th Gen Intel(R) Core(TM) i7-12700*.
+
+### Multi-Objective Optimization
+
+
+ There are several methods to solve a multi-objective problem, as can be found in past literatures (Mahjoob, M. and Abbasian, P., 2018; Kong, Z. Y., How, B. S., Mahmoud, A., & Sunarso, J., 2022; Yang, Z. et al., 2014). We employ the following 2 methods to combine our 2 objectives together, and solve the problem as a single-objective problem.
+#### Weighted-Sum Method
+Both objectives are assigned a positive weight ($w$ for $Obj_1$, $0 \leq w \leq 1$) and the goal is to minimize the weighted sum of both objective functions. An issue is that $Obj_1$ involves $Obj_2$, so it must be numerically greater than the latter, therefore assigning a small enough $w$ is important to avoid the dominance of the total cost over AA satisfaction.
+$$\min w * Obj_1 + (1 - w) * Obj_2$$
+In Gurobi implementation, we use the `setObjectiveN()`  that defaults to weighted-sum method according to the official documentation ([gurobi doc 9.1: Working with Multiple Objective](https://www.gurobi.com/documentation/9.1/refman/working_with_multiple_obje.html)).
+
+
+#### Lp-Metric Method
+The Lp-metric method aims to reduce the digression btween objective functions and their ideal solution obtained by indiviually optimizing them. In order to obtain the $Obj^*$, we need to solve the problem with only one objective at a time (optimize twice) and then plug in the $Obj^*$ values, so there's 3 times of optimization in total.
+
+$$
+\min w * \frac{Obj_1 - Obj_1^*}{Obj_1^*} + (1 - w) * \frac{Obj_2 - Obj_2^*}{Obj_2^*}
+$$
+
+
 
 
 ## Data Collection and Analysis Result
 
 ### Data Collection
 We use the data in case study from Amiri's paper. The scene is set at a well-populated region of Iran located near sourthern Central Alborz, with several active faults surrounding (hence the disaster is imagined to be an earthquake). We consider
-1. $I$: 5 suppliers, including Sari, Qazvin, Tehran, Arak and Isfahan.
-2. $J$: 15 candidate points, including Gorgan, Semnan, Sari, Rasht, Qazvin, Karaj, Tehran, Varamin, Roibatkarim, Islamshahr, Shahriar, Gom, Arak, Isfahan and Kashan. Their pair-wise distance statistics are shown in figure 3. The setup costs of an RDC and a CS are shown in figure 3.
-3. $K$: 15 demand points (AAs), in which the first 8 nodes are low-risk AAs while the later 7 are high-risk ones (the former is denoted $K/K'$ while the latter is denoted $K'$). Their demands under all scenarios ($D_{kcs}$) are shown in figure 4.
+1. $I$ contains 5 suppliers, including Sari, Qazvin, Tehran, Arak and Isfahan.
+2. $J$ contains 15 candidate points, including Gorgan, Semnan, Sari, Rasht, Qazvin, Karaj, Tehran, Varamin, Roibatkarim, Islamshahr, Shahriar, Gom, Arak, Isfahan and Kashan. Their pair-wise distance statistics are shown in figure 3. The setup costs of an RDC and a CS are shown in figure 3.
+3. $K$ contains 15 demand points (AAs) which are the same as $J$. The first 8 nodes are low-risk AAs while the later 7 are high-risk ones (the former is denoted $K/K'$ while the latter is denoted $K'$). Their demands under all scenarios ($D_{kcs}$) are shown in figure 4.
 4. $C$ is the set of commodities, here we use water, food, and shelter.
 5. $S$ is the set of scenarios with probabilites $p_s = [0.45, 0.3, 0.1, 0.15]$.
 
-Note that $J, K$ are the same node sets. Although it could seem unreasonable that the resource sources and the demand points are the same nodes in calculation, we assume that the affected area and the center building are located in different geographical locations; they are simply within the same city.
+Note that $I$ is a subset of $J$, and $J = K$. Although it could seem unreasonable that the resource sources and the demand points are the same nodes in calculation, we assume that the affected area and the center building are located in different geographical locations; they are simply within the same city. Same reasoning goes for the subset condition of $I \subseteq J$. 
 
 <figure>
   <img
@@ -224,3 +246,10 @@ Note that $J, K$ are the same node sets. Although it could seem unreasonable tha
 
 
 ##
+
+## References
+
+- Mahjoob, M. (2018). Designing a cost-time-quality-efficient grinding process using MODM methods. arXiv preprint arXiv:1804.10710. [link](https://arxiv.org/abs/1804.10710)
+- Blank, J., & Deb, K. (2020). Pymoo: Multi-objective optimization in python. IEEE Access, 8, 89497-89509. [link](https://ieeexplore.ieee.org/document/8950979)
+- Kong, Z. Y., How, B. S., Mahmoud, A., & Sunarso, J. (2022). Multi-objective Optimisation Using Fuzzy and Weighted Sum Approach for Natural Gas Dehydration with Consideration of Regional Climate. Process Integration and Optimization for Sustainability, 1-18. [link](https://doi.org/10.1007/s41616-021-00195-9)
+- Yang, Z., Cai, X., & Fan, Z. (2014, July). Epsilon constrained method for constrained multiobjective optimization problems: some preliminary results. In Proceedings of the companion publication of the 2014 annual conference on genetic and evolutionary computation (pp. 1181-1186).

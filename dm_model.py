@@ -1,3 +1,5 @@
+#%%
+
 import pandas as pd
 from gurobipy import *
 from util import to_range, DATA_PATH, FIG_PATH, getSupplierAADistance, OptimizationMethod
@@ -14,21 +16,21 @@ df_distance = pd.read_csv(DATA_PATH + f'/{PATH_PREFIX}distance.csv')
 assert df_remains_usable.shape[1] == df_distance.shape[0]
 
 M = 10 ** 1e1  # a large number
-EPSILON = (df_demand.shape[1] // 2 // 2) + 1  # a limit on the number of CS
+EPSILON = (df_demand.shape[1] // 2) + 1  # a limit on the number of CS
 
 # sets / indices
 # Here J, K are the same point sets
 SET = dict(
     I=[i for i in range(df_supplier.shape[0])],  # set of suppliers (i)
-    J=[j for j in range(df_demand.shape[1] // 2)],  # candidates of RDC or CS (j)
-    K=[k for k in range(df_demand.shape[1] // 2 + 1)],  # set of AA (k)
-    Kh=[k for k in range(df_demand.shape[1] // 2 // 2)],  # set of high-risk AA (`Kh` is a subset of `K`) (k′)
+    J=[j for j in range(df_demand.shape[1])],  # candidates of RDC or CS (j)
+    K=[k for k in range(df_demand.shape[1])],  # set of AA (k)
+    Kh=[k for k in range(df_demand.shape[1] // 2 + 1)],  # set of high-risk AA (`Kh` is a subset of `K`) (k′)
     # S=[], # set of possible scenarios (s)
     C=[c for c in range(df_supplier.shape[1])]  # set of commodities (c)
 )
 
 # the deviation (δ) indicates an increased commodity inventory penalized
-# by the last term of the first objective function
+# by the last term of the first objective function (the robust-optimization framework specified in paper p.7 section 3)
 DELTA = [[0 for j in to_range(SET['C'])] for c in to_range(SET['J'])]
 
 # parameters
@@ -37,9 +39,9 @@ PARAMETER = dict(
     CAP_SIZE_r=df_setup_cost.iloc[0, 2],  # capacity limit for an RDC
     CAP_SIZE_c=df_setup_cost.iloc[2, 2],  # capacity limit for an CS
     CAP_SIZE_a=df_setup_cost.iloc[1, 2],  # capacity limit for an AA
-    Fr=df_setup_cost.iloc[0, 1],  # fixed setup cost for an RDC
-    Fc=df_setup_cost.iloc[2, 1],  # fixed setup cost fo an CS
-    AADist=df_distance.to_numpy(),  # distance between nodes
+    Fr=df_setup_cost.iloc[0, 1],          # fixed setup cost for an RDC
+    Fc=df_setup_cost.iloc[2, 1],          # fixed setup cost fo an CS
+    AADist=df_distance.to_numpy(),        # distance between nodes
     SupAADist=getSupplierAADistance(
         distance_info_path=DATA_PATH + f'/{PATH_PREFIX}distance.csv',
         supplier_info_path=DATA_PATH + f'/{PATH_PREFIX}supplier.csv',
@@ -53,21 +55,21 @@ PARAMETER = dict(
     # inventory holding cost for commodity `c` at AA `k`
     PI=tuple(round(df_commodity['procure'] * 0.6, 3)),  # inventory shortage cost for commodity `c`
     v=df_commodity['volume'].tolist(),  # required unit space for commodity `c`
-    D=[(tuple(map(int, d.split(', ')))) for d in df_demand.iloc[0, 1:]],
+    D=[(tuple(map(int, d.split(', ')))) for d in df_demand.iloc[0, :]],
     # amount of demand for commodity `c` at AA `k`
     S=list(df_supplier.itertuples(index=False, name=None)),
     # amount of commodity `c` that could be supplied from supplier `i`
     RHOj=0.26,  # fraction of stocked material of commodity `c` remains usable at RDC / CS `j` (0 <= RHOj <= 1)
-    RHOi=0.26  # fraction of stocked material of commodity `c` remains usable at supplier `i` (0 <= RHOi <= 1)
+    RHOi=0.26   # fraction of stocked material of commodity `c` remains usable at supplier `i` (0 <= RHOi <= 1)
 )
 
 
-def solve(weight=0.01, opt_method=OptimizationMethod.LP_METRIC):
+def solve(weight=0.01,
+        opt_method=OptimizationMethod.WEIGHTED_SUM):
     # supplier -> RDC / CS -> AA
     model = Model('Disaster relief logistic model: Deterministic')
     model.ModelSense = GRB.MINIMIZE
     model.setParam('NonConvex', 2)
-
     W1 = weight  # weight of objective 1 (total cost)
 
     # variables
@@ -126,7 +128,6 @@ def solve(weight=0.01, opt_method=OptimizationMethod.LP_METRIC):
         model.setObjectiveN(obj2, index=1, weight=1 - W1, name='Satisfaction measure')
     elif opt_method == OptimizationMethod.LP_METRIC:
         single_objval = (9631.5, 586.3)
-
         model.setObjectiveN(((obj1 - single_objval[0]) / single_objval[0]), index=0, weight=W1, name='Cost')
         model.setObjectiveN(((obj2 - single_objval[1]) / single_objval[1]), index=1, weight=1 - W1,
                             name='Satisfaction measure')
@@ -219,25 +220,37 @@ def solve(weight=0.01, opt_method=OptimizationMethod.LP_METRIC):
     model.optimize()
 
     print(f'Objective value: {model.objVal}')
-
-    return model
+    print(f'Objective 1 value: {obj1.getValue()}')
+    print(f'Objective 2 value: {obj2.getValue()}')
+    return model, obj1, obj2
 
 
 # %%
-weights = [0.001 * i for i in range(1, 11)]
-solvers = [solve(w, OptimizationMethod.LP_METRIC) for w in weights]
-plt.plot(weights, [s.objVal for s in solvers], linestyle='-', linewidth='2', markersize='16', marker='.')
-plt.xlabel('weight')
-plt.ylabel('objective value')
-plt.title('Deterministic model\'s solution under different weight (LP-metric)')
-plt.savefig(FIG_PATH + '/dm_lp-metric.png')
-plt.show()
+# weights = [0.001 * i for i in range(1, 11)]
+# solvers = [solve(w, OptimizationMethod.LP_METRIC) for w in weights]
+# plt.plot(weights, [s.objVal for s in solvers], linestyle='-', linewidth='2', markersize='16', marker='.')
+# plt.xlabel('weight')
+# plt.ylabel('objective value')
+# plt.title('Deterministic model\'s solution under different weight (LP-metric)')
+# plt.savefig(FIG_PATH + '/dm_lp-metric.png')
+# plt.show()
 # %%
-weights = [0.001 * i for i in range(1, 11)]
+weights = [0.01 * i for i in range(1, 11)]
 solvers = [solve(w, OptimizationMethod.WEIGHTED_SUM) for w in weights]
-plt.plot(weights, [s.objVal for s in solvers], linestyle='-', linewidth='2', markersize='16', marker='.')
+#%%
+weightedObjs = [weights[i] * solvers[i][1].getValue() + (1-weights[i]) * solvers[i][2].getValue() for i in to_range(weights)]
+Obj1s = [s[1].getValue() for s in solvers]
+Obj2s = [s[2].getValue() for s in solvers]
+plt.plot(weights, weightedObjs, linestyle='-', linewidth='2', markersize='16', marker='.', label="weighted sum")
+plt.plot(weights, Obj1s, linestyle='-', linewidth='2', markersize='16', marker='.', label="Obj1*")
+plt.plot(weights, Obj2s, linestyle='-', linewidth='2', markersize='16', marker='.', label="Obj2*")
 plt.xlabel('weight')
-plt.ylabel('objective value')
-plt.title('Deterministic model\'s solution under different weight (weighted sum)')
+plt.ylabel('Objective value')
+plt.legend()
+plt.title('Deterministic model\'s solution under different weight')
 plt.savefig(FIG_PATH + '/dm_ws.png')
 plt.show()
+
+
+# %%
+model = solve(0.01, OptimizationMethod.WEIGHTED_SUM)
