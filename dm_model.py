@@ -3,7 +3,7 @@
 import pandas as pd
 from gurobipy import *
 from util import to_range, DATA_PATH, FIG_PATH, getSupplierAADistance, OptimizationMethod
-
+from typing import List
 import matplotlib.pyplot as plt
 
 PATH_PREFIX = 'MoDRL_'
@@ -65,7 +65,9 @@ PARAMETER = dict(
 
 
 def solve(weight=0.01,
-        opt_method=OptimizationMethod.WEIGHTED_SUM):
+        opt_method=OptimizationMethod.WEIGHTED_SUM,
+        single_objval:List[float]=[0,0]):
+
     # supplier -> RDC / CS -> AA
     model = Model('Disaster relief logistic model: Deterministic')
     model.ModelSense = GRB.MINIMIZE
@@ -127,7 +129,6 @@ def solve(weight=0.01,
         model.setObjectiveN(obj1, index=0, weight=W1, name='Cost')
         model.setObjectiveN(obj2, index=1, weight=1 - W1, name='Satisfaction measure')
     elif opt_method == OptimizationMethod.LP_METRIC:
-        single_objval = (9631.5, 586.3)
         model.setObjectiveN(((obj1 - single_objval[0]) / single_objval[0]), index=0, weight=W1, name='Cost')
         model.setObjectiveN(((obj2 - single_objval[1]) / single_objval[1]), index=1, weight=1 - W1,
                             name='Satisfaction measure')
@@ -222,32 +223,51 @@ def solve(weight=0.01,
     print(f'Objective value: {model.objVal}')
     print(f'Objective 1 value: {obj1.getValue()}')
     print(f'Objective 2 value: {obj2.getValue()}')
-    return model, obj1, obj2
+    return model, obj1.getValue(), obj2.getValue()
 
-
-# %%
-# weights = [0.001 * i for i in range(1, 11)]
-# solvers = [solve(w, OptimizationMethod.LP_METRIC) for w in weights]
-# plt.plot(weights, [s.objVal for s in solvers], linestyle='-', linewidth='2', markersize='16', marker='.')
-# plt.xlabel('weight')
-# plt.ylabel('objective value')
-# plt.title('Deterministic model\'s solution under different weight (LP-metric)')
-# plt.savefig(FIG_PATH + '/dm_lp-metric.png')
-# plt.show()
-# %%
-weights = [0.01 * i for i in range(1, 11)]
-solvers = [solve(w, OptimizationMethod.WEIGHTED_SUM) for w in weights]
 #%%
-weightedObjs = [weights[i] * solvers[i][1].getValue() + (1-weights[i]) * solvers[i][2].getValue() for i in to_range(weights)]
-Obj1s = [s[1].getValue() for s in solvers]
-Obj2s = [s[2].getValue() for s in solvers]
+
+# get obj1*
+m, obj1, obj2 = solve(1, OptimizationMethod.WEIGHTED_SUM)
+obj1_star = obj1
+m, obj1, obj2 = solve(0, OptimizationMethod.WEIGHTED_SUM)
+obj2_star = obj2
+objstars = [obj1_star, obj2_star]
+print(objstars)
+# %%
+weights = [0.1 * i for i in range(1, 11)]
+solvers = [solve(w, OptimizationMethod.LP_METRIC, objstars) for w in weights]
+# note that in lp-metrics, we need (Obj - Obj*) / Obj* instead of native Obj
+Obj1_s = [(s[1] - obj1_star) / obj1_star for s in solvers]
+Obj2_s = [(s[2] - obj2_star) / obj2_star for s in solvers]
+LpObjs = [weights[i] * Obj1_s[i] + (1-weights[i]) * Obj2_s[i] for i in to_range(weights)]
+Obj1s = [s[1] for s in solvers]
+Obj2s = [s[2] for s in solvers]
+#%%
+plt.plot(weights, LpObjs, linestyle='-', linewidth='2', markersize='16', marker='.', label="weighted sum")
+plt.plot(weights, Obj1s, linestyle='-', linewidth='2', markersize='16', marker='.', label="Obj1*")
+plt.plot(weights, Obj2s, linestyle='-', linewidth='2', markersize='16', marker='.', label="Obj2*")
+plt.xlabel('weight')
+plt.ylabel('objective value')
+plt.legend()
+plt.title('Deterministic model\'s solution under different weight (LP-metric)')
+plt.savefig(FIG_PATH + '/dm_lp-metric.png')
+plt.show()
+
+
+
+# %%
+solvers = [solve(w, OptimizationMethod.WEIGHTED_SUM) for w in weights]
+weightedObjs = [weights[i] * solvers[i][1] + (1-weights[i]) * solvers[i][2] for i in to_range(weights)]
+Obj1s = [s[1] for s in solvers]
+Obj2s = [s[2]for s in solvers]
 plt.plot(weights, weightedObjs, linestyle='-', linewidth='2', markersize='16', marker='.', label="weighted sum")
 plt.plot(weights, Obj1s, linestyle='-', linewidth='2', markersize='16', marker='.', label="Obj1*")
 plt.plot(weights, Obj2s, linestyle='-', linewidth='2', markersize='16', marker='.', label="Obj2*")
 plt.xlabel('weight')
 plt.ylabel('Objective value')
 plt.legend()
-plt.title('Deterministic model\'s solution under different weight')
+plt.title('Deterministic model\'s solution under different weight (weighted-sum)')
 plt.savefig(FIG_PATH + '/dm_ws.png')
 plt.show()
 
