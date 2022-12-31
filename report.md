@@ -10,11 +10,11 @@ Team B
 
 
 ---
+
 ## Table of Contents
 1. [Introduction](#Introduction)
     1.1 [Background: Disaster Relief Logistics](#Background:-Disaster-Relief-Logistics)
     1.2 [Motivation](#Motivation)
-    1.3 [Abbreviations](#Abbreviations)
 
 
 ## Introduction
@@ -31,29 +31,35 @@ CS: Contactless Station
 AA: Affected Area
 
 
-### Amiri's Paper Setting
+### Motivation
+As Covid-19 threats gradually becomes a normality, it is a must to consider how to respond to a disaster under the pandemic. An imaginary scenario is that an earthquake damages a hospital that quarantines many Covid-19 confirmed cases, and now the resources need to be sent to this hospital without further human contacts. In this case, some contactless stations (CSs) need to be set up in place of the Amiri's proposed RDCs.
+CSs send resources via self-driving cars, therefore avoid the risk brought by frequent human mobility in between. They also reduces the transportation costs because no drivers are needed. We imagine that CSs should have higher setup cost an dbetter capacity than RDCs.
+The below compares the original paper setting and our proposed setting.
+#### Amiri's Paper Setting
 ![alt text](./figures/amiri_general_schema_of_rd_chain.png)
 
-
-### Motivation
-As Covid-19 threats gradually becomes a normality, it is a must to consider how to respond to a disaster under the pandemic. An imaginary scenario is that an earthquake damages a hospital that quarantines many Covid-19 confirmed cases, and now the resources need to be sent to this hospital without further human contacts. In this case, some contactless stations (CSs) need to be set up in place of the Amiri's proposed RDCs. CSs send resources via self-driving cars, therefore avoids the risk brought by frequent human mobility in between. It also reduces the transportation costs because no drivers are needed, and the capacity of a CS could be
-
-### Our Setting
+#### Our Setting
 ![alt text](./figures/general_schema_of_rd_chain_revised.png)
 
 
+### Problem Definition
+Amiri's paper models disaster planning and response capturing the inherent uncertainty in demand, supply, and cost resulting from the disaster. The model consists of 3 stages and 2 kinds of pair-wise transportation (Supplier-RDC, RDC-AA). Given constraints on transportation and the capacity limits in the 3 sets of nodes, the goal is to select optimum number of commodities in delivery from node to node, locations to set up RDCs, and capacitiy levels if an RDC is to be set up, while minimizing the total cost and the least satisified area's shortage cost. Amiri's paper goes further to wrap the objective functions with a robust optimization framework to guarantee small variance and model feasibility; we would like to skip the part as it makes the model too complicated.
+In brief, we would like to mainly follow Amiri's paper formulation and multi-objective (bi-objective) setting, but with the following modifications:
+1. Separating RDCs into standard RDCs (denoted RDC) and CSs (denoted CS).
+2. Separating affected areas into high-risk and low-risk AAs, where high-risk AAs only receive resources from CSs, and low-risk AAs could receive from both.
+3. Simplifying the constraints by removing the procure costs of commodities, and fixing the setup cost and capacity size for RDC (Amiri's paper has 3 setup costs with 3 sizes), and handcrafting a setup cost and a capacity size for CS.
+4. Simplifying the objectives by removing the robust optimization framework described in the paper section 3 formula (13), and keeping only the naive $\xi$ for both objectives.
 
+## Methodology
 
-
-## Formulation
-
+### Formulation
 
 - Sets and Indices
 
     - $I$: Suppliers
     - $J$: Candidate points for RDCs and CCs
     - $K$: Affected Areas
-    - $I$, $J$ and $K$ are disjoint sets. For each $j \in J$, it is could be an RDC, or a CS, or none of the above, just an empty point.
+    - $I$, For each $j \in J$, it is could be an RDC, or a CS, or none of the above, just an empty point.
     - $K'$: High-risk Affected Areas; Affected Areas that only receive commodities transported by CSs.
     - $K/K'$: Low-risk Affected Areas; Affected Areas that only receive commodities transported by RDCs.
     - $C$: Commodity Types.
@@ -113,7 +119,7 @@ As Covid-19 threats gradually becomes a normality, it is a must to consider how 
     $\Sigma_{s \in S}p_s(\Sigma_{c \in C}\max_{k \in K}{b_{cks}})$
 
 - Constraints
-    The green parts are highlighted to indicate the revised parts based on our series of contactless station settings.
+    The green parts are highlighted to indicate the revised parts from Amiri's paper.
 
     (1) **Control Balance Equation**: The amount of commodities sent from suppliers and other RDC/CS $j'$ to $j$ $-$ the amount $j$ sending out to other AA roughly equals to the amount of commodities transferred to AAs from the RDC $j$. If LHS is greater than the RHS, this inventory surplus is penalized by the first objective.
     <!-- (24) -->
@@ -125,7 +131,7 @@ As Covid-19 threats gradually becomes a normality, it is a must to consider how 
         \Sigma_{i \in I} X_{ijcs} + \rho\Sigma_{i \in I}Q_{ijc} + {\color{green}\Sigma_{j' \neq j}{Y_{jj'cs}}\alpha_{j'}\beta_{j'}} - \Sigma_{k \in K}Y_{jkcs}(\alpha_j + \beta_j) = \delta_{jcs} \\ \forall j \in J, \forall c \in C, \forall s \in S
     $$ -->
 
-    (2) **Inventory Equality Constrain**t*: The amount of commodites from RDC/CS $j$ to AA $k -$ AA $k$'s demand should equal to $k$'s invnentory - $k$'s shortage. The revised part is the special case when $k$ is a special AA that could only receive commodites sent by a CS.
+    (2) **Inventory Equality Constraint**: The amount of commodites from RDC/CS $j$ to AA $k -$ AA $k$'s demand should equal to $k$'s invnentory $- k$'s shortage. The revised part is the special case when $k$ is a special AA that could only receive commodites sent by a CS.
 
     <!-- (25)- -->
     <!-- 從rdc j 送到AA k 的貨 = k's inventory - k's shortage -->
@@ -152,23 +158,69 @@ As Covid-19 threats gradually becomes a normality, it is a must to consider how 
     \Sigma_{i \in I}\Sigma_{c \in C} v_cQ_{ijc} \leq CapSize^C \cdot \beta_j \forall j \in J
     $$
 
-    (6) 
+    (6) **Supplier Capacity Constraint (in preparedness phase):** The amount of commodities a supplier sends out to other places should not exceed the supplier's own capacity (before the disaster).
+     <!-- (32) -->
+    $$
+    \Sigma_{j \in J} Q_{ijc} \leq S_{ic} \;\forall i \in I, \forall c \in C
+    $$
+
+    (7) **Supplier Capacity Constraint (in response phase):** The amount of commodities a supplier sends out to other places should not exceed the supplier's own capacity (after the disaster, under all scenarios).
+     <!-- (33) -->
+     $$
+    \Sigma_{j \in J} X_{ijcs} \leq \rho_{ics} S_{ic} \;\forall i \in I, \forall c \in C, \forall s \in S
+     $$
+    (8) **RDC/CS Identity Constraint:** A node in set $J$ could only be (1) none (2) RDC (3) CS, but not RDC and CS simultaneously.
+    <!-- (34) -->
+    $$\alpha_j + \beta_j \leq 1 \;\forall j \in J$$
+
+    (9) **CS Number Constraint:** $\epsilon$ is the maximum number of CSs allowed in the network.
+    $$
+    \color{green} \Sigma_{j \in J} \beta_j \leq \epsilon
+    $$
 
 
-### Deterministic Modeling
+## Data Collection and Analysis Result
+
+### Data Collection
+We use the data in case study from Amiri's paper. The scene is set at a well-populated region of Iran located near sourthern Central Alborz, with several active faults surrounding (hence the disaster is imagined to be an earthquake). We consider
+1. $I$: 5 suppliers, including Sari, Qazvin, Tehran, Arak and Isfahan.
+2. $J$: 15 candidate points, including Gorgan, Semnan, Sari, Rasht, Qazvin, Karaj, Tehran, Varamin, Roibatkarim, Islamshahr, Shahriar, Gom, Arak, Isfahan and Kashan. Their pair-wise distance statistics are shown in figure 3. The setup costs of an RDC and a CS are shown in figure 3.
+3. $K$: 15 demand points (AAs), in which the first 8 nodes are low-risk AAs while the later 7 are high-risk ones (the former is denoted $K/K'$ while the latter is denoted $K'$). Their demands under all scenarios ($D_{kcs}$) are shown in figure 4.
+4. $C$ is the set of commodities, here we use water, food, and shelter.
+5. $S$ is the set of scenarios with probabilites $p_s = [0.45, 0.3, 0.1, 0.15]$.
+
+Note that $J, K$ are the same node sets. Although it could seem unreasonable that the resource sources and the demand points are the same nodes in calculation, we assume that the affected area and the center building are located in different geographical locations; they are simply within the same city.
+
+<figure>
+  <img
+  src="./figures/data/distance.png"
+  alt="distance matrix">
+  <figcaption>Figure 1. Distance matrix</figcaption>
+</figure>
 
 
+<figure>
+  <img
+  src="./figures/data/supplier_capacity.png">
+  <figcaption>Figure 2. Supplier and their capacity with respect to commodity type</figcaption>
+</figure>
+  <img
+  src="./figures/data/delta_remains_usable.png">
 
-### Stochastic Modeling
-
-### Results
-
-#### Data
-We use the data from the case study in Amiri's paper. According to the paper, they use a well-populated region of Iran located near sourthern Central Alborz, with several active faults surrounding. We consider 5 suppliers Sari, Qazvin, Tehran, Arak and Isfahan, 15 demand points,
+  Figure 5. $\rho_{jcs}$ and $\rho_{ics}$; the fraction of stocked materials that remain usable (unit: %).
 
 
-![alt text](./figures/data/delta_remains_usable.png)
-![alt text](./figures/data/demand_under_scenario.png)
-![alt text](./figures/data/supplier_capacity.png)
-![alt text](./figures/data/distance.png )
-<img src="./figures/data/setup_cost.png" width="200" />
+<figure>
+  <img
+  src="./figures/data/setup_cost.png">
+  <figcaption>Figure 3. Setup cost for RDC and CS</figcaption>
+</figure>
+
+<figure>
+  <img
+  src="./figures/data/demand_under_scenario.png">
+  <figcaption>Figure 4. Demands of each AA under different scenarios.</figcaption>
+</figure>
+
+
+##
