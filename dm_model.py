@@ -244,7 +244,7 @@ LpObjs = [weights[i] * Obj1_s[i] + (1-weights[i]) * Obj2_s[i] for i in to_range(
 Obj1s = [s[1] for s in solvers]
 Obj2s = [s[2] for s in solvers]
 #%%
-plt.plot(weights, LpObjs, linestyle='-', linewidth='2', markersize='16', marker='.', label="weighted sum")
+plt.plot(weights, LpObjs, linestyle='-', linewidth='2', markersize='16', marker='.', label="lp-metric")
 plt.plot(weights, Obj1s, linestyle='-', linewidth='2', markersize='16', marker='.', label="Obj1*")
 plt.plot(weights, Obj2s, linestyle='-', linewidth='2', markersize='16', marker='.', label="Obj2*")
 plt.xlabel('weight')
@@ -253,7 +253,20 @@ plt.legend()
 plt.title('Deterministic model\'s solution under different weight (LP-metric)')
 plt.savefig(FIG_PATH + '/dm_lp-metric.png')
 plt.show()
+'''
+LpObjs = 
+[0.9892620596706254,
+ 0.8917457998538403,
+ 0.7802775748721102,
+ 0.6688093498903802,
+ 0.5573411249086927,
+ 0.44587289992695406,
+ 0.33440467494521553,
+ 0.22293644996347703,
+ 0.11146822498173851,
+ 0.0]
 
+'''
 
 
 # %%

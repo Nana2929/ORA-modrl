@@ -2,7 +2,7 @@
 import pandas as pd
 from gurobipy import *
 from util import to_range, DATA_PATH, FIG_PATH, getSupplierAADistance, OptimizationMethod
-
+from typing import List
 import matplotlib.pyplot as plt
 
 PATH_PREFIX = 'MoDRL_'
@@ -18,7 +18,7 @@ assert df_remains_usable.shape[1] == df_distance.shape[0]
 opt_method = OptimizationMethod.LP_METRIC
 
 M = 10 ** 1e1  # a large number
-EPSILON = (df_demand.shape[1] // 2 // 2) + 1  # a limit on the number of CS
+EPSILON = (df_demand.shape[1] //2) + 1  # a limit on the number of CS
 
 
 def getDemand():
@@ -37,9 +37,9 @@ def getDemand():
 # Here J, K are the same point sets
 SET = dict(
     I=[i for i in range(df_supplier.shape[0])],  # set of suppliers (i)
-    J=[j for j in range(df_demand.shape[1] // 2)],  # candidates of RDC or CS (j)
-    K=[k for k in range(df_demand.shape[1] // 2 + 1)],  # set of AA (k)
-    Kh=[k for k in range(df_demand.shape[1] // 2 // 2)],  # set of high-risk AA (`Kh` is a subset of `K`) (k′)
+    J=[j for j in range(df_demand.shape[1])],  # candidates of RDC or CS (j)
+    K=[k for k in range(df_demand.shape[1])],  # set of AA (k)
+    Kh=[k for k in range(df_demand.shape[1] // 2 + 1)],  # set of high-risk AA (`Kh` is a subset of `K`) (k′)
     S=[s for s in range(df_scenario.shape[0])],  # set of scenarios (s)
     C=[c for c in range(df_supplier.shape[1])]  # set of commodities (c)
 )
@@ -76,7 +76,9 @@ PARAMETER = dict(
 )
 
 
-def solve(weight=0.01, opt_method=OptimizationMethod.LP_METRIC):
+def solve(weight=0.01,
+        opt_method=OptimizationMethod.LP_METRIC,
+        single_objval:List[float]=[0,0]):
     # supplier -> RDC / CS -> AA
     model = Model('Disaster relief logistic model: Discrete Stochastic')
     model.ModelSense = GRB.MINIMIZE
@@ -146,7 +148,6 @@ def solve(weight=0.01, opt_method=OptimizationMethod.LP_METRIC):
         model.setObjectiveN(obj1, index=0, weight=W1, name='Cost')
         model.setObjectiveN(obj2, index=1, weight=1 - W1, name='Satisfaction measure')
     elif opt_method == OptimizationMethod.LP_METRIC:
-        single_objval = (7308.45125, 1363.9199999999998)
 
         model.setObjectiveN(((obj1 - single_objval[0]) / single_objval[0]), index=0, weight=W1, name='Cost')
         model.setObjectiveN(((obj2 - single_objval[1]) / single_objval[1]), index=1, weight=1 - W1,
@@ -247,24 +248,60 @@ def solve(weight=0.01, opt_method=OptimizationMethod.LP_METRIC):
 
     print(f'Objective value: {model.objVal}')
 
-    return model
+    return model, obj1.getValue(), obj2.getValue()
 
 
+# get obj*
+m, obj1, obj2 = solve(1, OptimizationMethod.WEIGHTED_SUM)
+obj1_star = obj1
+m, obj1, obj2 = solve(0, OptimizationMethod.WEIGHTED_SUM)
+obj2_star = obj2
+objstars = [obj1_star, obj2_star]
+print(objstars)
 # %%
-weights = [0.001 * i for i in range(1, 11)]
-solvers = [solve(w, OptimizationMethod.LP_METRIC) for w in weights]
-plt.plot(weights, [s.objVal for s in solvers], linestyle='-', linewidth='2', markersize='16', marker='.')
+weights = [0.1 * i for i in range(0, 11)]
+solvers = [solve(w, OptimizationMethod.LP_METRIC, objstars) for w in weights]
+# note that in lp-metrics, we need (Obj - Obj*) / Obj* instead of native Obj
+Obj1_s = [(s[1] - obj1_star) / obj1_star for s in solvers]
+Obj2_s = [(s[2] - obj2_star) / obj2_star for s in solvers]
+LpObjs = [weights[i] * Obj1_s[i] + (1-weights[i]) * Obj2_s[i] for i in to_range(weights)]
+Obj1s = [s[1] for s in solvers]
+Obj2s = [s[2] for s in solvers]
+#%%`
+plt.plot(weights, LpObjs, linestyle='-', linewidth='2', markersize='16', marker='.', label="lp-metric")
+plt.plot(weights, Obj1s, linestyle='-', linewidth='2', markersize='16', marker='.', label="Obj1*")
+plt.plot(weights, Obj2s, linestyle='-', linewidth='2', markersize='16', marker='.', label="Obj2*")
 plt.xlabel('weight')
 plt.ylabel('objective value')
+plt.legend()
 plt.title('Stochastic model\'s solution under different weight (LP-metric)')
 plt.savefig(FIG_PATH + '/sp_lp-metric.png')
 plt.show()
-# %%
-weights = [0.001 * i for i in range(1, 11)]
-solvers = [solve(w, OptimizationMethod.WEIGHTED_SUM) for w in weights]
-plt.plot(weights, [s.objVal for s in solvers], linestyle='-', linewidth='2', markersize='16', marker='.')
+'''
+
+LpObjs =
+[0.0,
+ 0.34543180176163213,
+ 0.4408713642341399,
+ 0.47799089452502563,
+ 0.48004170065664,
+ 0.40003472038905774,
+ 0.3200282669177362,
+ 0.24002128587283278,
+ 0.1600142011787681,
+ 0.13255314121554862,
+ 0.0]
+'''
+#%%solvers = [solve(w, OptimizationMethod.WEIGHTED_SUM) for w in weights]
+weightedObjs = [weights[i] * solvers[i][1] + (1-weights[i]) * solvers[i][2] for i in to_range(weights)]
+Obj1s = [s[1] for s in solvers]
+Obj2s = [s[2]for s in solvers]
+plt.plot(weights, weightedObjs, linestyle='-', linewidth='2', markersize='16', marker='.', label="weighted sum")
+plt.plot(weights, Obj1s, linestyle='-', linewidth='2', markersize='16', marker='.', label="Obj1*")
+plt.plot(weights, Obj2s, linestyle='-', linewidth='2', markersize='16', marker='.', label="Obj2*")
 plt.xlabel('weight')
-plt.ylabel('objective value')
-plt.title('Stochastic model\'s solution under different weight (weighted sum)')
+plt.ylabel('Objective value')
+plt.legend()
+plt.title('Stochastic model\'s solution under different weight (weighted-sum)')
 plt.savefig(FIG_PATH + '/sp_ws.png')
 plt.show()
