@@ -3,6 +3,7 @@ import pandas as pd
 from gurobipy import *
 from util import to_range, DATA_PATH, FIG_PATH, getSupplierAADistance, OptimizationMethod
 from typing import List
+from typing import List
 import matplotlib.pyplot as plt
 
 PATH_PREFIX = 'MoDRL_'
@@ -18,6 +19,7 @@ assert df_remains_usable.shape[1] == df_distance.shape[0]
 opt_method = OptimizationMethod.LP_METRIC
 
 M = 10 ** 1e1  # a large number
+EPSILON = (df_demand.shape[1] //2) + 1  # a limit on the number of CS
 EPSILON = (df_demand.shape[1] //2) + 1  # a limit on the number of CS
 
 
@@ -37,6 +39,9 @@ def getDemand():
 # Here J, K are the same point sets
 SET = dict(
     I=[i for i in range(df_supplier.shape[0])],  # set of suppliers (i)
+    J=[j for j in range(df_demand.shape[1])],  # candidates of RDC or CS (j)
+    K=[k for k in range(df_demand.shape[1])],  # set of AA (k)
+    Kh=[k for k in range(df_demand.shape[1] // 2 + 1)],  # set of high-risk AA (`Kh` is a subset of `K`) (k′)
     J=[j for j in range(df_demand.shape[1])],  # candidates of RDC or CS (j)
     K=[k for k in range(df_demand.shape[1])],  # set of AA (k)
     Kh=[k for k in range(df_demand.shape[1] // 2 + 1)],  # set of high-risk AA (`Kh` is a subset of `K`) (k′)
@@ -76,6 +81,9 @@ PARAMETER = dict(
 )
 
 
+def solve(weight=0.01,
+        opt_method=OptimizationMethod.LP_METRIC,
+        single_objval:List[float]=[0,0]):
 def solve(weight=0.01,
         opt_method=OptimizationMethod.LP_METRIC,
         single_objval:List[float]=[0,0]):
@@ -249,8 +257,16 @@ def solve(weight=0.01,
     print(f'Objective value: {model.objVal}')
 
     return model, obj1.getValue(), obj2.getValue()
+    return model, obj1.getValue(), obj2.getValue()
 
 
+# get obj*
+m, obj1, obj2 = solve(1, OptimizationMethod.WEIGHTED_SUM)
+obj1_star = obj1
+m, obj1, obj2 = solve(0, OptimizationMethod.WEIGHTED_SUM)
+obj2_star = obj2
+objstars = [obj1_star, obj2_star]
+print(objstars)
 # get obj*
 m, obj1, obj2 = solve(1, OptimizationMethod.WEIGHTED_SUM)
 obj1_star = obj1
@@ -273,6 +289,7 @@ plt.plot(weights, Obj1s, linestyle='-', linewidth='2', markersize='16', marker='
 plt.plot(weights, Obj2s, linestyle='-', linewidth='2', markersize='16', marker='.', label="Obj2*")
 plt.xlabel('weight')
 plt.ylabel('objective value')
+plt.legend()
 plt.legend()
 plt.title('Stochastic model\'s solution under different weight (LP-metric)')
 plt.savefig(FIG_PATH + '/sp_lp-metric.png')
