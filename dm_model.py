@@ -227,34 +227,87 @@ def solve(weight=0.01,
 
 #%%
 
-# get obj1*
-m, obj1, obj2 = solve(1, OptimizationMethod.WEIGHTED_SUM)
-obj1_star = obj1
-m, obj1, obj2 = solve(0, OptimizationMethod.WEIGHTED_SUM)
-obj2_star = obj2
-objstars = [obj1_star, obj2_star]
-print(objstars)
-# %%
-weights = [0.1 * i for i in range(1, 11)]
-solvers = [solve(w, OptimizationMethod.LP_METRIC, objstars) for w in weights]
-# note that in lp-metrics, we need (Obj - Obj*) / Obj* instead of native Obj
-Obj1_s = [(s[1] - obj1_star) / obj1_star for s in solvers]
-Obj2_s = [(s[2] - obj2_star) / obj2_star for s in solvers]
-LpObjs = [weights[i] * Obj1_s[i] + (1-weights[i]) * Obj2_s[i] for i in to_range(weights)]
-Obj1s = [s[1] for s in solvers]
-Obj2s = [s[2] for s in solvers]
+def draw(optimize_method: str):
+
+    # weight range
+    weights = [0.1 * i for i in range(1, 11)]
+    # matplotlib settings
+    ax1_color = 'dodgerblue'
+    ax1_color2 = 'steelblue'
+    ax2_color = "tab:green"
+    msize = 12
+    title = f'Deterministic model\'s objective value under different weight ({optimize_method})'
+    figname =  f'/dm_{optimize_method}.png'
+    statname = f'/statistics/dm_{optimize_method}.txt'
+    if optimize_method == 'weighted-sum':
+        solvers = [solve(w, OptimizationMethod.WEIGHTED_SUM) for w in weights]
+        # weighted Objs
+        wObjs = [weights[i] * solvers[i][1] + (1-weights[i]) * solvers[i][2] for i in to_range(weights)]
+
+    elif optimize_method == 'lp-metric':
+        m, obj1, obj2 = solve(1, OptimizationMethod.WEIGHTED_SUM)
+        obj1_star = obj1
+        m, obj1, obj2 = solve(0, OptimizationMethod.WEIGHTED_SUM)
+        obj2_star = obj2
+        objstars = [obj1_star, obj2_star]
+
+        solvers = [solve(w, OptimizationMethod.LP_METRIC,
+                    objstars) for w in weights]
+        # note that in lp-metrics, we need (Obj - Obj*) / Obj* instead of native Obj
+        Obj1_s = [(s[1] - obj1_star) / obj1_star for s in solvers]
+        Obj2_s = [(s[2] - obj2_star) / obj2_star for s in solvers]
+        # lp-metric Objs
+        wObjs = [weights[i] * Obj1_s[i] + (1-weights[i]) * Obj2_s[i] for i in to_range(weights)]
+
+    Obj1s = [s[1] for s in solvers]
+    Obj2s = [s[2] for s in solvers]
+    # 1/2 subplots, double y-axis
+    fig, ax1 = plt.subplots()
+    # drawing the obj1, obj2 in ax1 (greater numeric scale)
+    obj1_line = ax1.plot(weights, Obj1s,
+            linestyle='-', linewidth='2',
+            markersize=msize, marker='.',
+            label="Obj1", color=ax1_color)
+    obj2_line = ax1.plot(weights, Obj2s,
+            linestyle='-', linewidth='2',
+            markersize=msize, marker='.',
+            label="Obj2", color=ax1_color2)
+    ax1.set_ylabel('Single Obj Value', color=ax1_color)
+    ax1.tick_params(axis='y', labelcolor=ax1_color)
+
+    # drawing lp=metric obj in ax2 (smaller scale)
+    ax2 = ax1.twinx()
+    obj3_line = ax2.plot(weights, wObjs,
+            linestyle='-', linewidth='2',
+            markersize= msize, marker='.',
+            color = ax2_color, label=optimize_method)
+    ax2.set_ylabel(f'{optimize_method} Obj Value', color=ax2_color)
+    ax2.tick_params(axis='y', labelcolor=ax2_color)
+
+    # setting unified legend
+    lns = obj1_line + obj2_line + obj3_line
+    labs = [l.get_label() for l in lns]
+    plt.legend(lns, labs, loc=0)
+
+    plt.xlabel('weight')
+    plt.title(title)
+    plt.savefig(FIG_PATH + figname)
+    plt.show()
+     # saving stats
+    with open(FIG_PATH + statname, 'w') as f:
+        if optimize_method == 'lp-metric':
+            f.write(f'Obj1*: {obj1_star}, Obj2*: {obj2_star} \n\n')
+        for wid, w in enumerate(weights):
+            o1 = round(Obj1s[wid], 4)
+            o2 = round(Obj2s[wid], 4)
+            o3 = round(wObjs[wid], 4)
+            f.write(f'w: {w}, Obj1: {o1}, Obj2: {o2}, {optimize_method}: {o3} \n')
+
+
 #%%
-plt.plot(weights, LpObjs, linestyle='-', linewidth='2', markersize='16', marker='.', label="lp-metric")
-plt.plot(weights, Obj1s, linestyle='-', linewidth='2', markersize='16', marker='.', label="Obj1*")
-plt.plot(weights, Obj2s, linestyle='-', linewidth='2', markersize='16', marker='.', label="Obj2*")
-plt.xlabel('weight')
-plt.ylabel('objective value')
-plt.legend()
-plt.title('Deterministic model\'s solution under different weight (LP-metric)')
-plt.savefig(FIG_PATH + '/dm_lp-metric.png')
-plt.show()
+draw('lp-metric')
 '''
-LpObjs = 
+LpObjs =
 [0.9892620596706254,
  0.8917457998538403,
  0.7802775748721102,
@@ -265,25 +318,8 @@ LpObjs =
  0.22293644996347703,
  0.11146822498173851,
  0.0]
-
 '''
-
-
-# %%
-solvers = [solve(w, OptimizationMethod.WEIGHTED_SUM) for w in weights]
-weightedObjs = [weights[i] * solvers[i][1] + (1-weights[i]) * solvers[i][2] for i in to_range(weights)]
-Obj1s = [s[1] for s in solvers]
-Obj2s = [s[2]for s in solvers]
-plt.plot(weights, weightedObjs, linestyle='-', linewidth='2', markersize='16', marker='.', label="weighted sum")
-plt.plot(weights, Obj1s, linestyle='-', linewidth='2', markersize='16', marker='.', label="Obj1*")
-plt.plot(weights, Obj2s, linestyle='-', linewidth='2', markersize='16', marker='.', label="Obj2*")
-plt.xlabel('weight')
-plt.ylabel('Objective value')
-plt.legend()
-plt.title('Deterministic model\'s solution under different weight (weighted-sum)')
-plt.savefig(FIG_PATH + '/dm_ws.png')
-plt.show()
-
+#%%
+draw('weighted-sum')
 
 # %%
-model = solve(0.01, OptimizationMethod.WEIGHTED_SUM)

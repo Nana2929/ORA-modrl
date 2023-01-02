@@ -42,9 +42,6 @@ SET = dict(
     J=[j for j in range(df_demand.shape[1])],  # candidates of RDC or CS (j)
     K=[k for k in range(df_demand.shape[1])],  # set of AA (k)
     Kh=[k for k in range(df_demand.shape[1] // 2 + 1)],  # set of high-risk AA (`Kh` is a subset of `K`) (k′)
-    J=[j for j in range(df_demand.shape[1])],  # candidates of RDC or CS (j)
-    K=[k for k in range(df_demand.shape[1])],  # set of AA (k)
-    Kh=[k for k in range(df_demand.shape[1] // 2 + 1)],  # set of high-risk AA (`Kh` is a subset of `K`) (k′)
     S=[s for s in range(df_scenario.shape[0])],  # set of scenarios (s)
     C=[c for c in range(df_supplier.shape[1])]  # set of commodities (c)
 )
@@ -81,9 +78,7 @@ PARAMETER = dict(
 )
 
 
-def solve(weight=0.01,
-        opt_method=OptimizationMethod.LP_METRIC,
-        single_objval:List[float]=[0,0]):
+
 def solve(weight=0.01,
         opt_method=OptimizationMethod.LP_METRIC,
         single_objval:List[float]=[0,0]):
@@ -96,7 +91,7 @@ def solve(weight=0.01,
 
     # variables
     i, j, k, k_prime, s, c = [len(idx) for idx in SET.values()]
-    J_prime = [j_prime for j_prime in to_range(SET['J'])]  # j′ is a subset of `J`
+    J_prime = [j_prime for j_prime in to_range(SET['J'])] #
 
     # Qijc: Amount of commodity c supplied by supplier i to RDC / CS j
     Q = model.addVars(i, j, c, lb=0, vtype=GRB.CONTINUOUS, name='Q')
@@ -117,6 +112,7 @@ def solve(weight=0.01,
     # reference: https://support.gurobi.com/hc/en-us/community/posts/4408734183185-TypeError-unsupported-operand-type-s-for-int-and-GenExpr-
     b_linearize = model.addVars(s, c, lb=0, vtype=GRB.CONTINUOUS, name='b_linearize')
     # reference: https://support.gurobi.com/hc/en-us/community/posts/360056771292-Invalid-argument-to-QuadExpr-multiplication-Error-
+    # just another J set (for constraint 24 specifically)
     j_disjoint = model.addVars(j, len(J_prime), lb=0, vtype=GRB.CONTINUOUS, name='j_disjoint')
     model.update()
 
@@ -175,7 +171,7 @@ def solve(weight=0.01,
     model.addConstrs((
         j_disjoint[j, j_prime] == alpha[j_prime] * alpha[j]
         for j in to_range(J_prime) for j_prime in to_range(J_prime) if j_prime != j
-    ), 'c-j_disjoint')
+    ), 'c-j_disjoint (for c-24 computability)')
 
     model.addConstrs((
         quicksum(X[i, j, c, s] for i in to_range(SET['I'])) +
@@ -257,68 +253,94 @@ def solve(weight=0.01,
     print(f'Objective value: {model.objVal}')
 
     return model, obj1.getValue(), obj2.getValue()
-    return model, obj1.getValue(), obj2.getValue()
 
 
-# get obj*
-m, obj1, obj2 = solve(1, OptimizationMethod.WEIGHTED_SUM)
-obj1_star = obj1
-m, obj1, obj2 = solve(0, OptimizationMethod.WEIGHTED_SUM)
-obj2_star = obj2
-objstars = [obj1_star, obj2_star]
-print(objstars)
-# get obj*
-m, obj1, obj2 = solve(1, OptimizationMethod.WEIGHTED_SUM)
-obj1_star = obj1
-m, obj1, obj2 = solve(0, OptimizationMethod.WEIGHTED_SUM)
-obj2_star = obj2
-objstars = [obj1_star, obj2_star]
-print(objstars)
+def draw(optimize_method: str):
+
+    # weight range
+    weights = [0.1 * i for i in range(1, 11)]
+    # matplotlib settings
+    ax1_color = 'dodgerblue'
+    ax1_color2 = 'steelblue'
+    ax2_color = "tab:green"
+    msize = 12
+
+    # stochastic prefix
+    title = f'Stochastic model\'s objective value under different weight ({optimize_method})'
+    figname =  f'/sp_{optimize_method}.png'
+    statname = f'/statistics/dm_{optimize_method}.txt'
+
+
+
+    if optimize_method == 'weighted-sum':
+        solvers = [solve(w, OptimizationMethod.WEIGHTED_SUM) for w in weights]
+        # weighted Objs
+        wObjs = [weights[i] * solvers[i][1] + (1-weights[i]) * solvers[i][2] for i in to_range(weights)]
+
+    elif optimize_method == 'lp-metric':
+        m, obj1, obj2 = solve(1, OptimizationMethod.WEIGHTED_SUM)
+        obj1_star = obj1
+        m, obj1, obj2 = solve(0, OptimizationMethod.WEIGHTED_SUM)
+        obj2_star = obj2
+        objstars = [obj1_star, obj2_star]
+
+        solvers = [solve(w, OptimizationMethod.LP_METRIC,
+                    objstars) for w in weights]
+        # note that in lp-metrics, we need (Obj - Obj*) / Obj* instead of native Obj
+        Obj1_s = [(s[1] - obj1_star) / obj1_star for s in solvers]
+        Obj2_s = [(s[2] - obj2_star) / obj2_star for s in solvers]
+        # lp-metric Objs
+        wObjs = [weights[i] * Obj1_s[i] + (1-weights[i]) * Obj2_s[i] for i in to_range(weights)]
+
+    Obj1s = [s[1] for s in solvers]
+    Obj2s = [s[2] for s in solvers]
+    # 1/2 subplots, double y-axis
+    fig, ax1 = plt.subplots()
+    # drawing the obj1, obj2 in ax1 (greater numeric scale)
+    obj1_line = ax1.plot(weights, Obj1s,
+            linestyle='-', linewidth='2',
+            markersize=msize, marker='.',
+            label="Obj1", color=ax1_color)
+    obj2_line = ax1.plot(weights, Obj2s,
+            linestyle='-', linewidth='2',
+            markersize=msize, marker='.',
+            label="Obj2", color=ax1_color2)
+    ax1.set_ylabel('Single Obj Value', color=ax1_color)
+    ax1.tick_params(axis='y', labelcolor=ax1_color)
+
+    # drawing lp=metric obj in ax2 (smaller scale)
+    ax2 = ax1.twinx()
+    obj3_line = ax2.plot(weights, wObjs,
+            linestyle='-', linewidth='2',
+            markersize= msize, marker='.',
+            color = ax2_color, label=optimize_method)
+    ax2.set_ylabel(f'{optimize_method} Obj Value', color=ax2_color)
+    ax2.tick_params(axis='y', labelcolor=ax2_color)
+
+    # setting unified legend
+    lns = obj1_line + obj2_line + obj3_line
+    labs = [l.get_label() for l in lns]
+    plt.legend(lns, labs, loc=0)
+
+    plt.xlabel('weight')
+    plt.title(title)
+    plt.savefig(FIG_PATH + figname)
+    plt.show()
+
+    # saving stats
+    with open(FIG_PATH + statname, 'w') as f:
+        if optimize_method == 'lp-metric':
+            f.write(f'Obj1*: {obj1_star}, Obj2*: {obj2_star} \n\n')
+        for wid, w in enumerate(weights):
+            o1 = round(Obj1s[wid], 4)
+            o2 = round(Obj2s[wid], 4)
+            o3 = round(wObjs[wid], 4)
+            f.write(f'w: {w}, Obj1: {o1}, Obj2: {o2}, {optimize_method}: {o3} \n')
+
+#%%
+draw('lp-metric')
+
+#%%
+draw('weighted-sum')
+
 # %%
-weights = [0.1 * i for i in range(0, 11)]
-solvers = [solve(w, OptimizationMethod.LP_METRIC, objstars) for w in weights]
-# note that in lp-metrics, we need (Obj - Obj*) / Obj* instead of native Obj
-Obj1_s = [(s[1] - obj1_star) / obj1_star for s in solvers]
-Obj2_s = [(s[2] - obj2_star) / obj2_star for s in solvers]
-LpObjs = [weights[i] * Obj1_s[i] + (1-weights[i]) * Obj2_s[i] for i in to_range(weights)]
-Obj1s = [s[1] for s in solvers]
-Obj2s = [s[2] for s in solvers]
-#%%`
-plt.plot(weights, LpObjs, linestyle='-', linewidth='2', markersize='16', marker='.', label="lp-metric")
-plt.plot(weights, Obj1s, linestyle='-', linewidth='2', markersize='16', marker='.', label="Obj1*")
-plt.plot(weights, Obj2s, linestyle='-', linewidth='2', markersize='16', marker='.', label="Obj2*")
-plt.xlabel('weight')
-plt.ylabel('objective value')
-plt.legend()
-plt.legend()
-plt.title('Stochastic model\'s solution under different weight (LP-metric)')
-plt.savefig(FIG_PATH + '/sp_lp-metric.png')
-plt.show()
-'''
-
-LpObjs =
-[0.0,
- 0.34543180176163213,
- 0.4408713642341399,
- 0.47799089452502563,
- 0.48004170065664,
- 0.40003472038905774,
- 0.3200282669177362,
- 0.24002128587283278,
- 0.1600142011787681,
- 0.13255314121554862,
- 0.0]
-'''
-#%%solvers = [solve(w, OptimizationMethod.WEIGHTED_SUM) for w in weights]
-weightedObjs = [weights[i] * solvers[i][1] + (1-weights[i]) * solvers[i][2] for i in to_range(weights)]
-Obj1s = [s[1] for s in solvers]
-Obj2s = [s[2]for s in solvers]
-plt.plot(weights, weightedObjs, linestyle='-', linewidth='2', markersize='16', marker='.', label="weighted sum")
-plt.plot(weights, Obj1s, linestyle='-', linewidth='2', markersize='16', marker='.', label="Obj1*")
-plt.plot(weights, Obj2s, linestyle='-', linewidth='2', markersize='16', marker='.', label="Obj2*")
-plt.xlabel('weight')
-plt.ylabel('Objective value')
-plt.legend()
-plt.title('Stochastic model\'s solution under different weight (weighted-sum)')
-plt.savefig(FIG_PATH + '/sp_ws.png')
-plt.show()
