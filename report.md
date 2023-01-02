@@ -1,7 +1,7 @@
 ## ORA Term Project 2022
 ### Disaster Relief Logistics with Contactless Delivery Policy
-
 ### 2022 Fall
+
 Team B
 
 資訊所一 楊晴雯 P76114511
@@ -36,10 +36,10 @@ As Covid-19 threats gradually becomes a normality, it is a must to consider how 
 CSs send resources via self-driving cars, therefore avoid the risk brought by frequent human mobility in between. They also reduces the transportation costs because no drivers are needed. We imagine that CSs should have higher setup cost an dbetter capacity than RDCs.
 The below compares the original paper setting and our proposed setting.
 #### Amiri's Paper Setting
-![alt text](./figures/amiri_general_schema_of_rd_chain.png)
+![alt text](./figures/schemas/amiri_general_schema_of_rd_chain.png)
 
 #### Our Setting
-![alt text](./figures/general_schema_of_rd_chain_revised.png)
+![alt text](./figures/schemas/general_schema_of_rd_chain_revised.png)
 
 
 ### Problem Definition
@@ -86,8 +86,8 @@ In brief, we would like to mainly follow Amiri's paper formulation and multi-obj
     - $C_{ijcs}$: transportation cost from supplier $i$ to candidate point $j$ with commodity $c$ under scenario $s$.
     - $C_{jkcs}$: transportation cost from candidate point $j$ to AA $k$ with commodity $c$ under scenario $s$.
     - $D_{kcs}$: amount of demand of commodity $c$ under scenario $s$.
-    - $\rho_{jcs}$: fraction of stocked materials of commodity $c$ remains usable at candidate point $j$ under scenario $s$ ($0 \leq \rho_{jcs} \leq 1$)
-    - $\rho_{ics}$: fraction of stokced materials of commodity $c$ remains usdables at supplier $i$ under scenario $s$ ($0 \leq \rho_{ics} \leq 1$)
+    - $\rho_{jcs}$: fraction of stocked materials of commodity $c$ remains usable at candidate point $j$ under scenario $s$ ($$0 \leq \rho_{jcs} \leq 1$$)
+    - $\rho_{ics}$: fraction of stokced materials of commodity $c$ remains usdables at supplier $i$ under scenario $s$ ($$0 \leq \rho_{ics} \leq 1$$)
 
 - Decision Variables
 
@@ -117,13 +117,8 @@ In brief, we would like to mainly follow Amiri's paper formulation and multi-obj
 
     (1) **Control Balance Equation**: The amount of commodities sent from suppliers and other RDC/CS $j'$ to $j$ $-$ the amount $j$ sending out to other AA roughly equals to the amount of commodities transferred to AAs from the RDC $j$. If LHS is greater than the RHS, this inventory surplus is penalized by the first objective.
     <!-- (24) -->
-    <!-- Without j disjoint -->
-    $$
-    \Sigma_{i \in I} X_{ijcs} + \rho\Sigma_{i \in I}Q_{ijc} - \Sigma_{k \in K}Y_{jkcs}(\alpha_j + \beta_j) = \delta_{jcs} \\ \forall j \in J, \forall c \in C, \forall s \in S
-    $$
-    <!-- $$ With j_disjoint
-        \Sigma_{i \in I} X_{ijcs} + \rho\Sigma_{i \in I}Q_{ijc} + {\color{green}\Sigma_{j' \neq j}{Y_{jj'cs}}\alpha_{j'}\beta_{j'}} - \Sigma_{k \in K}Y_{jkcs}(\alpha_j + \beta_j) = \delta_{jcs} \\ \forall j \in J, \forall c \in C, \forall s \in S
-    $$ -->
+
+    $$\Sigma_{i \in I} X_{ijcs} + \rho\Sigma_{i \in I}Q_{ijc} + {\color{green}\Sigma_{j' \neq j}{Y_{jj'cs}}\alpha_{j'}\beta_{j'}} - \Sigma_{k \in K}Y_{jkcs}(\alpha_j + \beta_j) = \delta_{jcs} \\ \forall j \in J, \forall c \in C, \forall s \in S$$
 
     (2) **Inventory Equality Constraint**: The amount of commodites from RDC/CS $j$ to AA $k -$ AA $k$'s demand should equal to $k$'s invnentory $- k$'s shortage. The revised part is the special case when $k$ is a special AA that could only receive commodites sent by a CS.
 
@@ -147,22 +142,17 @@ In brief, we would like to mainly follow Amiri's paper formulation and multi-obj
     (5) **RDC Capacity Constraint**: the amount of commodities sent from supplier $i$ to RDC $j$ should not exceed the capacity of the RDC. Similarly, the amount of commodities sent from supplier $i$ to CS $j$ should not exceed the capacity of the CS.
     <!-- (30) -->
 
-    $$
-    \Sigma_{i \in I}\Sigma_{c \in C} v_cQ_{ijc} \leq CapSize^R \cdot \alpha_j \forall j \in J\\
-    \Sigma_{i \in I}\Sigma_{c \in C} v_cQ_{ijc} \leq CapSize^C \cdot \beta_j \forall j \in J
-    $$
+    $$\Sigma_{i \in I}\Sigma_{c \in C} v_cQ_{ijc} \leq CapSize^R \cdot \alpha_j \forall j \in J\\
+    \Sigma_{i \in I}\Sigma_{c \in C} v_cQ_{ijc} \leq CapSize^C \cdot \beta_j \forall j \in J$$
 
     (6) **Supplier Capacity Constraint (in preparedness phase):** The amount of commodities a supplier sends out to other places should not exceed the supplier's own capacity (before the disaster).
      <!-- (32) -->
-    $$
-    \Sigma_{j \in J} Q_{ijc} \leq S_{ic} \;\forall i \in I, \forall c \in C
-    $$
+    $$\Sigma_{j \in J} Q_{ijc} \leq S_{ic} \;\forall i \in I, \forall c \in C$$
 
     (7) **Supplier Capacity Constraint (in response phase):** The amount of commodities a supplier sends out to other places should not exceed the supplier's own capacity (after the disaster, under all scenarios).
      <!-- (33) -->
-     $$
-    \Sigma_{j \in J} X_{ijcs} \leq \rho_{ics} S_{ic} \;\forall i \in I, \forall c \in C, \forall s \in S
-     $$
+     $$\Sigma_{j \in J} X_{ijcs} \leq \rho_{ics} S_{ic} \;\forall i \in I, \forall c \in C, \forall s \in S$$
+
     (8) **RDC/CS Identity Constraint:** A node in set $J$ could only be (1) none (2) RDC (3) CS, but not RDC and CS simultaneously.
     <!-- (34) -->
     $$\alpha_j + \beta_j \leq 1 \;\forall j \in J$$
@@ -178,25 +168,21 @@ In brief, we would like to mainly follow Amiri's paper formulation and multi-obj
     - Objective 2: maximize the total satisfaction; i.e., minimize the shortage costs of the least satisfied AA under all scenarios.
     $\Sigma_{s \in S}p_s(\Sigma_{c \in C}\max_{k \in K}{b_{cks}})$
 
-### Implementation Details
-We decide to solve the problem using Gurobi Optimization solver with the academic license. The environment is Gurobi 10.0.0 with Python 3.7.12 under the *Linux x86_64 system with 12th Gen Intel(R) Core(TM) i7-12700*.
 
 ### Multi-Objective Optimization
 
 
  There are several methods to solve a multi-objective problem, as can be found in past literatures (Mahjoob, M. and Abbasian, P., 2018; Kong, Z. Y., How, B. S., Mahmoud, A., & Sunarso, J., 2022; Yang, Z. et al., 2014). We employ the following 2 methods to combine our 2 objectives together, and solve the problem as a single-objective problem.
+
 #### Weighted-Sum Method
 Both objectives are assigned a positive weight ($w$ for $Obj_1$, $0 \leq w \leq 1$) and the goal is to minimize the weighted sum of both objective functions. An issue is that $Obj_1$ involves $Obj_2$, so it must be numerically greater than the latter, therefore assigning a small enough $w$ is important to avoid the dominance of the total cost over AA satisfaction.
 $$\min w * Obj_1 + (1 - w) * Obj_2$$
-In Gurobi implementation, we use the `setObjectiveN()`  that defaults to weighted-sum method according to the official documentation ([gurobi doc 9.1: Working with Multiple Objective](https://www.gurobi.com/documentation/9.1/refman/working_with_multiple_obje.html)).
 
 
 #### Lp-Metric Method
 The Lp-metric method aims to reduce the digression btween objective functions and their ideal solution obtained by indiviually optimizing them. In order to obtain the $Obj^*$, we need to solve the problem with only one objective at a time (optimize twice) and then plug in the $Obj^*$ values, so there's 3 times of optimization in total.
 
-$$
-\min w * \frac{Obj_1 - Obj_1^*}{Obj_1^*} + (1 - w) * \frac{Obj_2 - Obj_2^*}{Obj_2^*}
-$$
+$$\min w * \frac{Obj_1 - Obj_1^*}{Obj_1^*} + (1 - w) * \frac{Obj_2 - Obj_2^*}{Obj_2^*}$$
 
 
 
@@ -227,13 +213,13 @@ Note that $I$ is a subset of $J$, and $J = K$. Although it could seem unreasonab
   <figcaption>Figure 2. Supplier and their capacity with respect to commodity type</figcaption>
 </figure>
   <img
-  src="./figures/data/delta_remains_usable.png">
+  src="./figures/data/rho_remains_usable.png">
 
   Figure 5. $\rho_{jcs}$ and $\rho_{ics}$; the fraction of stocked materials that remain usable (unit: %).
 
 
 <figure>
-  <img
+  <img width=200
   src="./figures/data/setup_cost.png">
   <figcaption>Figure 3. Setup cost for RDC and CS</figcaption>
 </figure>
@@ -245,7 +231,39 @@ Note that $I$ is a subset of $J$, and $J = K$. Although it could seem unreasonab
 </figure>
 
 
-##
+## Result Analysis
+
+### Modeling
+We start simple and build a **deterministic model** first. This model assumes in the response phase, we have perfect knowledge of which scenario would happen, so the *demand, transportation cost, and the fraction of stocked materials that remain usable* are pre-determined. In the following experiemnts, we choose to use the scenario $s1$. We do not extensively discuss on this model but record its statistics for reference.
+Our final model is the stochastic model that considers 4 scenarios, representing different epicenters and potential earthquake intensity.
+
+
+### Implementation Details
+We decide to solve the problem using Gurobi Optimization solver with the academic license. The environment is Gurobi 10.0.0 with Python 3.7.12 under the *Linux x86_64 system with 12th Gen Intel(R) Core(TM) i7-12700*.
+In Gurobi implementation, we use the `setObjectiveN()`  that defaults to weighted-sum method according to the official documentation ([gurobi doc 9.1: Working with Multiple Objective](https://www.gurobi.com/documentation/9.1/refman/working_with_multiple_obje.html)) for both weighted-sum and Lp-metric strategies.
+
+### Solution
+
+```
+model type: stochastic
+weight: 0.3
+optimization metod: Lp-metric
+```
+
+
+
+### Weight Analysis
+| | Lp-metric  &nbsp; &nbsp;| Weighted-sum &nbsp; &nbsp;
+| :------------ | :-------------------------:| -------------:|
+Deterministic |![](./figures/dm_lp-metric.png)  |  ![](./figures/dm_weighted-sum.png)
+Stochastic |![](./figures/sp_lp-metric.png)  |  ![](./figures/sp_weighted-sum.png)
+
+Before analysis, it should be first noted that the numeric scales for both objectives are different; Objective 1 accumulates all costs so it is at around $10^4$, while Objective 2 is around $10^3$ (5 times smaller). Therefore, the Lp-metric which aims to minimize the digression between the objectives and their ideal solution is more suitable for this problem.
+
+In terms of the modeling method, the stochastic model gives more flunctuating line than the deterministic one. With single-objective optimization, we can minimize the total costs to $11,950$ ($10^6\$$) and the maximum shortage costs to $1364$ ($10^6\$$).
+
+
+
 
 ## References
 

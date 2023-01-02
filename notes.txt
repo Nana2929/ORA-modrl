@@ -1,0 +1,1 @@
+<!-- Tip: You can also right-click on the editor Tab and select Open Preview (⇧⌘V) or use the Command Palette (⇧⌘P) to run the Markdown: Open Preview to the Side command (⌘K V). -->
