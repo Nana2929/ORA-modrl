@@ -270,8 +270,6 @@ def draw(optimize_method: str):
     figname =  f'/sp_{optimize_method}.png'
     statname = f'/statistics/dm_{optimize_method}.txt'
 
-
-
     if optimize_method == 'weighted-sum':
         solvers = [solve(w, OptimizationMethod.WEIGHTED_SUM) for w in weights]
         # weighted Objs
@@ -338,9 +336,8 @@ def draw(optimize_method: str):
             f.write(f'w: {w}, Obj1: {o1}, Obj2: {o2}, {optimize_method}: {o3} \n')
 
 #%%
-draw('lp-metric')
+# draw('lp-metric')
 
 #%%
-draw('weighted-sum')
+# draw('weighted-sum')
 
-# %%
