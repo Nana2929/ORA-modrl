@@ -144,7 +144,7 @@ In brief, we would like to mainly follow Amiri's paper formulation and multi-obj
 
     $$\Sigma_{i \in I} {X_{ijcs} \leq M(\alpha_j + \beta_j)} \\ \forall j \in J, \forall c \in C, \forall s \in S$$
 
-    (5) **Capacity Limit Constraint**: the amount of commodities sent from upplier $i$ to RDC $j$ should not exceed the capacity of the RDC. Similarly, the amount of commodities sent from supplier $i$ to CS $j$ should not exceed the capacity of the CS.
+    (5) **RDC Capacity Constraint**: the amount of commodities sent from supplier $i$ to RDC $j$ should not exceed the capacity of the RDC. Similarly, the amount of commodities sent from supplier $i$ to CS $j$ should not exceed the capacity of the CS.
     <!-- (30) -->
 
     $$
@@ -211,7 +211,7 @@ We use the data in case study from Amiri's paper. The scene is set at a well-pop
 4. $C$ is the set of commodities, here we use water, food, and shelter.
 5. $S$ is the set of scenarios with probabilites $p_s = [0.45, 0.3, 0.1, 0.15]$.
 
-Note that $I$ is a subset of $J$, and $J = K$. Although it could seem unreasonable that the resource sources and the demand points are the same nodes in calculation, we assume that the affected area and the center building are located in different geographical locations; they are simply within the same city. Same reasoning goes for the subset condition of $I \subseteq J$. 
+Note that $I$ is a subset of $J$, and $J = K$. Although it could seem unreasonable that the resource sources and the demand points are the same nodes in calculation, we assume that the affected area and the center building are located in different geographical locations; they are simply within the same city. Same reasoning goes for the subset condition of $I \subseteq J$.
 
 <figure>
   <img

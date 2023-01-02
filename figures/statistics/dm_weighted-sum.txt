@@ -1,0 +1,10 @@
+w: 0.1, Obj1: 8382.0, Obj2: 1351.0, weighted-sum: 2054.1 
+w: 0.2, Obj1: 8382.0, Obj2: 1351.0, weighted-sum: 2757.2 
+w: 0.30000000000000004, Obj1: 8382.0, Obj2: 1351.0, weighted-sum: 3460.3 
+w: 0.4, Obj1: 8382.0, Obj2: 1351.0, weighted-sum: 4163.4 
+w: 0.5, Obj1: 8382.0, Obj2: 1351.0, weighted-sum: 4866.5 
+w: 0.6000000000000001, Obj1: 8382.0, Obj2: 1351.0, weighted-sum: 5569.6 
+w: 0.7000000000000001, Obj1: 8382.0, Obj2: 1351.0, weighted-sum: 6272.7 
+w: 0.8, Obj1: 8382.0, Obj2: 1351.0, weighted-sum: 6975.8 
+w: 0.9, Obj1: 8382.0, Obj2: 1351.0, weighted-sum: 7678.9 
+w: 1.0, Obj1: 8382.0, Obj2: 1351.0, weighted-sum: 8382.0 
