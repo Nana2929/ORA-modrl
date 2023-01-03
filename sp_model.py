@@ -16,11 +16,13 @@ df_distance = pd.read_csv(DATA_PATH + f'/{PATH_PREFIX}distance.csv')
 df_scenario = pd.read_csv(DATA_PATH + f'/{PATH_PREFIX}scenario.csv').drop('Scenario', axis=1)
 assert df_remains_usable.shape[1] == df_distance.shape[0]
 
+delta = 0 # ? feasibility 
 opt_method = OptimizationMethod.LP_METRIC
 
 M = 10 ** 1e1  # a large number
-EPSILON = (df_demand.shape[1] //2) + 1  # a limit on the number of CS
-EPSILON = (df_demand.shape[1] //2) + 1  # a limit on the number of CS
+
+
+EPSILON = (df_demand.shape[1] //2) + 1
 
 
 def getDemand():
@@ -46,7 +48,7 @@ SET = dict(
     C=[c for c in range(df_supplier.shape[1])]  # set of commodities (c)
 )
 
-DELTA = [[[0 for s in to_range(SET['S'])] for c in to_range(SET['C'])] for j in to_range(SET['J'])]
+DELTA = [[[delta for s in to_range(SET['S'])] for c in to_range(SET['C'])] for j in to_range(SET['J'])]
 
 PARAMETER = dict(
     # p=[0.2, 0.3, 0,5], # occurrence probability of scenario `s`
@@ -246,7 +248,9 @@ def solve(weight=0.01,
         alpha[j] + beta[j] <= 1 for j in to_range(SET['J'])
     ), 'c-34')
 
+    # model.addConstr(quicksum(alpha[j] for j in to_range(SET['J'])) <= EPSILON_r, 'c-number_of_RDC')
     model.addConstr(quicksum(beta[j] for j in to_range(SET['J'])) <= EPSILON, 'c-number_of_CS')
+
 
     model.optimize()
 

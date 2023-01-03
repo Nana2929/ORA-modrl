@@ -132,7 +132,7 @@ In brief, we would like to mainly follow Amiri's paper formulation and multi-obj
     (3) **RDC/CS Transferability**: RDC/CS could transfer commodity to other nodes only if there exists another RDC/CS/AA.
     <!-- (26) -->
     <!-- j is a RDC or a CS and k is a low-risk AA <=> j can send stuffs to k -->
-    $$Y_{jkcs} \leq M(\alpha_j + \beta_j)D_{kcs}c \\ \forall j \in J, \forall k \in K/K', \forall c \in C, \forall s \in S$$
+    $$Y_{jkcs} \leq M(\alpha_j + \beta_j)D_{kcs} \\ \forall j \in J, \forall k \in K/K', \forall c \in C, \forall s \in S$$
     <!-- j is a cs and k' is a high-risk AA <=> j can send commods to k'-->
     $$\color{green} Y_{jk'cs} \leq M\beta_jD_{k'cs} \forall j \in J, \\ \forall k' \in K', \forall c \in C, \forall s \in S$$
     <!-- (28) -->
@@ -243,10 +243,10 @@ We decide to solve the problem using Gurobi Optimization solver with the academi
 In Gurobi implementation, we use the `setObjectiveN()`  that defaults to weighted-sum method according to the official documentation ([gurobi doc 9.1: Working with Multiple Objective](https://www.gurobi.com/documentation/9.1/refman/working_with_multiple_obje.html)) for both weighted-sum and Lp-metric strategies.
 
 ### Solution
-
+@Nana
 ```
 model type: stochastic
-weight: 0.3
+weight: 0.1
 optimization metod: Lp-metric
 ```
 Table . Supplier to RDC transportation amount during response phase
@@ -269,6 +269,7 @@ Table . Supplier to RDC transportation amount during response phase
 |          |  Shelter |   |   |   |   |   |   |   |   |   |
 
 ### Weight Analysis
+@Nana 
 | | Lp-metric  &nbsp; &nbsp;| Weighted-sum &nbsp; &nbsp;
 | :------------ | :-------------------------:| -------------:|
 Deterministic |![](./figures/dm_lp-metric.png)  |  ![](./figures/dm_weighted-sum.png)
@@ -278,6 +279,12 @@ Before analysis, it should be first noted that the numeric scales for both objec
 
 In terms of the modeling method, the stochastic model gives more flunctuating line than the deterministic one. With single-objective optimization, we can minimize the total costs to $11,950$ ($10^6\$$) and the maximum shortage costs to $1364$ ($10^6\$$).
 
+### Constraint on Number of CS/RDC Analysis
+@Mark
+
+
+### Issues
+目前發現一個問題是同一個節點一定會被指定成RDC/CS 其中之一，猜測有可能跟delta設成0有關。
 
 
 
