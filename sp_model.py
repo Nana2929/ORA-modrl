@@ -95,7 +95,7 @@ def solve(weight=0.01,
 
     # Qijc: Amount of commodity c supplied by supplier i to RDC / CS j
     Q = model.addVars(i, j, c, lb=0, vtype=GRB.CONTINUOUS, name='Q')
-    # Xijcs: Amount of c transferred from Suppkier i to RDC / CS j under scenario s
+    # Xijcs: Amount of c transferred from Supplier i to RDC / CS j under scenario s
     X = model.addVars(i, j, c, s, lb=0, vtype=GRB.CONTINUOUS, name='X')
     # Yjkcs: Amount of c transferred from RDC / CS j to AA k under scenario s
     Y = model.addVars(j, k, c, s, lb=0, vtype=GRB.CONTINUOUS, name='Y')

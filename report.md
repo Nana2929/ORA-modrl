@@ -86,8 +86,8 @@ In brief, we would like to mainly follow Amiri's paper formulation and multi-obj
     - $C_{ijcs}$: transportation cost from supplier $i$ to candidate point $j$ with commodity $c$ under scenario $s$.
     - $C_{jkcs}$: transportation cost from candidate point $j$ to AA $k$ with commodity $c$ under scenario $s$.
     - $D_{kcs}$: amount of demand of commodity $c$ under scenario $s$.
-    - $\rho_{jcs}$: fraction of stocked materials of commodity $c$ remains usable at candidate point $j$ under scenario $s$ ($$0 \leq \rho_{jcs} \leq 1$$)
-    - $\rho_{ics}$: fraction of stokced materials of commodity $c$ remains usdables at supplier $i$ under scenario $s$ ($$0 \leq \rho_{ics} \leq 1$$)
+    - $\rho_{jcs}$: fraction of stocked materials of commodity $c$ remains usable at candidate point $j$ under scenario $s$ ($0 \leq \rho_{jcs} \leq 1$)
+    - $\rho_{ics}$: fraction of stokced materials of commodity $c$ remains usdables at supplier $i$ under scenario $s$ ($0 \leq \rho_{ics} \leq 1$)
 
 - Decision Variables
 
@@ -249,8 +249,24 @@ model type: stochastic
 weight: 0.3
 optimization metod: Lp-metric
 ```
-
-
+Table . Supplier to RDC transportation amount during response phase
+|   |         | Gorgan |  Semnan  | Rasht  | Qazvin  | Karaj  |  Varamin |  Robatkarim | Gom  | Arak  |
+|---|---------|---|---|---|---|---|---|---|---|---|
+| Sari  |Water   |   |   |   |   |   |   |   |   |   |
+|       |  Food |   |   |   |   |   |   |   |   |   |
+|       |  Shelter |   |   |   |   |   |   |   |   |   |
+| Qazvin |Water   |   |   |   |   |   |   |   |   |   |
+|         |  Food |   |   |   |   |   |   |   |   |   |
+|         |  Shelter |   |   |   |   |   |   |   |   |   |
+|Tehran  |Water   |   |   |   |   |   |   |   |   |   |
+|        |  Food |   |   |   |   |   |   |   |   |   |
+|         |  Shelter |   |   |   |   |   |   |   |   |   |
+| Arak  |Water   |   |   |   |   |   |   |   |   |   |
+|       |  Food |   |   |   |   |   |   |   |   |   |
+|       |  Shelter |   |   |   |   |   |   |   |   |   |
+| Isfahan  |Water   |   |   |   |   |   |   |   |   |   |
+|          |  Food |   |   |   |   |   |   |   |   |   |
+|          |  Shelter |   |   |   |   |   |   |   |   |   |
 
 ### Weight Analysis
 | | Lp-metric  &nbsp; &nbsp;| Weighted-sum &nbsp; &nbsp;
