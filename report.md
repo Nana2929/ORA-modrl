@@ -243,33 +243,37 @@ We decide to solve the problem using Gurobi Optimization solver with the academi
 In Gurobi implementation, we use the `setObjectiveN()`  that defaults to weighted-sum method according to the official documentation ([gurobi doc 9.1: Working with Multiple Objective](https://www.gurobi.com/documentation/9.1/refman/working_with_multiple_obje.html)) for both weighted-sum and Lp-metric strategies.
 
 ### Solution
-@Nana
+
+The final stochastic programming model has 4,422 continuous variables and 210 binary variables; 666 quadratic constraints and 12 general constraints. The optimization process takes 0.81 seconds for over 4,000 simplex iterations. The below shows the statistics for the configuration:
 ```
-model type: stochastic
-weight: 0.1
-optimization metod: Lp-metric
+stochastic model
+objective 1 weight = 0.1
+number of CS (epsilon) = 8
+optimization method: Lp-metric
 ```
-Table . Supplier to RDC transportation amount during response phase
-|   |         | Gorgan |  Semnan  | Rasht  | Qazvin  | Karaj  |  Varamin |  Robatkarim | Gom  | Arak  |
+
+
+Table . Supplier to CS transportation amount during response phase
+|   |             | Sari  | Tehran  |  Varamin | Islamshahr | Shahriar  | Gom  | Isfahan | Kashan
 |---|---------|---|---|---|---|---|---|---|---|---|
-| Sari  |Water   |   |   |   |   |   |   |   |   |   |
-|       |  Food |   |   |   |   |   |   |   |   |   |
-|       |  Shelter |   |   |   |   |   |   |   |   |   |
-| Qazvin |Water   |   |   |   |   |   |   |   |   |   |
-|         |  Food |   |   |   |   |   |   |   |   |   |
-|         |  Shelter |   |   |   |   |   |   |   |   |   |
-|Tehran  |Water   |   |   |   |   |   |   |   |   |   |
-|        |  Food |   |   |   |   |   |   |   |   |   |
-|         |  Shelter |   |   |   |   |   |   |   |   |   |
-| Arak  |Water   |   |   |   |   |   |   |   |   |   |
-|       |  Food |   |   |   |   |   |   |   |   |   |
-|       |  Shelter |   |   |   |   |   |   |   |   |   |
-| Isfahan  |Water   |   |   |   |   |   |   |   |   |   |
-|          |  Food |   |   |   |   |   |   |   |   |   |
-|          |  Shelter |   |   |   |   |   |   |   |   |   |
+| Sari        |Water   |  (0.0, 117.0, 117.0, 117.0) |   |   |   |   |   |   |   |   |
+|             |  Food |  (117.0, 117.0, 117.0, 117.0) |   |   |   |   |   |   |   |   |
+|             |  Shelter | (0.0, 0.0, 39.0, 39.0)  |   |   |   |   |   |   |   |   |
+| Qazvin      |Water   |   |  (55.6, 0.0, 0.0, 0.0) |   |   |   |   |   |   |   |
+|             |  Food |   |   |   |   |  (0.0, 117.0, 117.0, 117.0) |   |   |   |   |
+|              |  Shelter |   |   |   |  (0.0, 39.0, 39.0, 39.0) |   |   |   |   |   |
+|Tehran       |Water   |   | (55.0, 0.0, 0.0, 0.0)  |   |  |   |   |   |   |   |
+|             |  Food |   |  (132.6, 0.0, 0.0, 0.0) |   |(0.0, 132.6, 132.6, 132.6)    |   |   |   |   |   |
+|             |  Shelter |   |   |   | (0.0, 44.2, 44.2, 44.2)  |   |   |   |   |   |
+| Arak        |Water   |   |   |   | (0.0, 117.0, 117.0, 117.0)  |   |   |   |   |   |
+|              |  Food |   |  (117.0, 0.0, 0.0, 0.0) |   |(0.0, 117.0, 117.0, 117.0)   |   |   |   |   |   |
+|             |  Shelter |   |   |   |  (0.0, 39.0, 39.0, 39.0) |   |   |   |   |   |
+| Isfahan     |Water   |   |   |   |   |   |   |   |(0.0, 117.0, 117.0, 117.0)   |   |
+|             |  Food |   |   |   |   (0.0, 0.0, 117.0, 0.0) |   |   |   |  (117.0, 117.0, 0.0, 117.0)  |   |
+|             |  Shelter |   |   |   |   |   |   |   |(0.0, 0.0, 39.0, 0.0)   |   |
 
 ### Weight Analysis
-@Nana 
+@Nana
 | | Lp-metric  &nbsp; &nbsp;| Weighted-sum &nbsp; &nbsp;
 | :------------ | :-------------------------:| -------------:|
 Deterministic |![](./figures/dm_lp-metric.png)  |  ![](./figures/dm_weighted-sum.png)
