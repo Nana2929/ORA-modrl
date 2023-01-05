@@ -16,13 +16,9 @@ df_distance = pd.read_csv(DATA_PATH + f'/{PATH_PREFIX}distance.csv')
 df_scenario = pd.read_csv(DATA_PATH + f'/{PATH_PREFIX}scenario.csv').drop('Scenario', axis=1)
 assert df_remains_usable.shape[1] == df_distance.shape[0]
 
-delta = 0 # ? feasibility 
 opt_method = OptimizationMethod.LP_METRIC
 
 M = 10 ** 1e1  # a large number
-
-
-EPSILON = (df_demand.shape[1] //2) + 1
 
 
 def getDemand():
@@ -48,7 +44,6 @@ SET = dict(
     C=[c for c in range(df_supplier.shape[1])]  # set of commodities (c)
 )
 
-DELTA = [[[delta for s in to_range(SET['S'])] for c in to_range(SET['C'])] for j in to_range(SET['J'])]
 
 PARAMETER = dict(
     # p=[0.2, 0.3, 0,5], # occurrence probability of scenario `s`
@@ -80,10 +75,9 @@ PARAMETER = dict(
 )
 
 
-
-def solve(weight=0.01,
-        opt_method=OptimizationMethod.LP_METRIC,
-        single_objval:List[float]=[0,0]):
+def solve(weight=0.1,
+          opt_method=OptimizationMethod.LP_METRIC,
+          single_objval: List[float] = [0, 0], eps=[7, 15 - 7]):
     # supplier -> RDC / CS -> AA
     model = Model('Disaster relief logistic model: Discrete Stochastic')
     model.ModelSense = GRB.MINIMIZE
@@ -93,7 +87,7 @@ def solve(weight=0.01,
 
     # variables
     i, j, k, k_prime, s, c = [len(idx) for idx in SET.values()]
-    J_prime = [j_prime for j_prime in to_range(SET['J'])] #
+    J_prime = [j_prime for j_prime in to_range(SET['J'])]
 
     # Qijc: Amount of commodity c supplied by supplier i to RDC / CS j
     Q = model.addVars(i, j, c, lb=0, vtype=GRB.CONTINUOUS, name='Q')
@@ -109,6 +103,11 @@ def solve(weight=0.01,
     alpha = model.addVars(j, vtype=GRB.BINARY, name='alpha')
     # if j is a CS
     beta = model.addVars(j, vtype=GRB.BINARY, name='beta')
+
+    # 1/5 delta
+    # delta_{jcs}:
+    # error vector presents the infeasibility of the model under scneario s
+    delta = model.addVars(j, c, s, vtype=GRB.BINARY, name='delta')
 
     # defined for linearize or Gurobi limited
     # reference: https://support.gurobi.com/hc/en-us/community/posts/4408734183185-TypeError-unsupported-operand-type-s-for-int-and-GenExpr-
@@ -147,7 +146,16 @@ def solve(weight=0.01,
     # objective function
     # single-objective 1 -> 7308.45125
     # single-objective 2 -> 189188.33067374982 (setObjectiveN -> model.objVal) or 1363.9199999999998 (best value)
+
+    # 1/5 single-objective 1 with delta to allow infeasibility
     obj1 = SC + TC + quicksum(ScCostMap[s] * PARAMETER['SP'][s] for s in to_range(SET['S']))
+    GAMMA = 0.5
+    obj1_delta_term = GAMMA * quicksum(delta[j, c, s] * PARAMETER['SP'][s]
+                                       for j in to_range(SET['J'])
+                                       for c in to_range(SET['C'])
+                                       for s in to_range(SET['S']))
+    obj1 = obj1 + obj1_delta_term
+
     obj2 = quicksum(
         quicksum(b_linearize[s, c] for c in to_range(SET['C'])) * PARAMETER['SP'][s] for s in to_range(SET['S']))
     if opt_method == OptimizationMethod.WEIGHTED_SUM:
@@ -180,7 +188,7 @@ def solve(weight=0.01,
         PARAMETER['RHOj'] * quicksum(Q[i, j, c] for i in to_range(SET['I'])) +
         quicksum(Y[j, j_prime, c, s] * j_disjoint[j, j_prime] for j_prime in to_range(J_prime) if j_prime != j) -
         quicksum(Y[j, k, c, s] for k in to_range(SET['K'])) * (alpha[j] + beta[j])
-        == DELTA[j][c][s] for j in to_range(SET['J']) for c in to_range(SET['C']) for s in to_range(SET['S'])
+        == delta[j, c, s] for j in to_range(SET['J']) for c in to_range(SET['C']) for s in to_range(SET['S'])
     ), 'c-24')
 
     # *
@@ -247,16 +255,15 @@ def solve(weight=0.01,
     model.addConstrs((
         alpha[j] + beta[j] <= 1 for j in to_range(SET['J'])
     ), 'c-34')
-
-    # model.addConstr(quicksum(alpha[j] for j in to_range(SET['J'])) <= EPSILON_r, 'c-number_of_RDC')
-    model.addConstr(quicksum(beta[j] for j in to_range(SET['J'])) <= EPSILON, 'c-number_of_CS')
-
-
+    EPSILON_r, EPSILON_c = eps
+    model.addConstr(quicksum(alpha[j] for j in to_range(SET['J'])) <= EPSILON_r, 'c-number_of_RDC')
+    model.addConstr(quicksum(beta[j] for j in to_range(SET['J'])) <= EPSILON_c, 'c-number_of_CS')
     model.optimize()
 
-    print(f'Objective value: {model.objVal}')
+    # print(f'Objective value: {model.objVal}')
 
-    return model, obj1.getValue(), obj2.getValue()
+    return model, obj1, obj2
+    # return model
 
 
 def draw(optimize_method: str):
@@ -271,28 +278,28 @@ def draw(optimize_method: str):
 
     # stochastic prefix
     title = f'Stochastic model\'s objective value under different weight ({optimize_method})'
-    figname =  f'/sp_{optimize_method}.png'
+    figname = f'/sp_{optimize_method}.png'
     statname = f'/statistics/dm_{optimize_method}.txt'
 
     if optimize_method == 'weighted-sum':
         solvers = [solve(w, OptimizationMethod.WEIGHTED_SUM) for w in weights]
         # weighted Objs
-        wObjs = [weights[i] * solvers[i][1] + (1-weights[i]) * solvers[i][2] for i in to_range(weights)]
+        wObjs = [weights[i] * solvers[i][1] + (1 - weights[i]) * solvers[i][2] for i in to_range(weights)]
 
     elif optimize_method == 'lp-metric':
         m, obj1, obj2 = solve(1, OptimizationMethod.WEIGHTED_SUM)
-        obj1_star = obj1
+        obj1_star = obj1.getValue()
         m, obj1, obj2 = solve(0, OptimizationMethod.WEIGHTED_SUM)
-        obj2_star = obj2
+        obj2_star = obj2.getValue()
         objstars = [obj1_star, obj2_star]
 
         solvers = [solve(w, OptimizationMethod.LP_METRIC,
-                    objstars) for w in weights]
+                         objstars) for w in weights]
         # note that in lp-metrics, we need (Obj - Obj*) / Obj* instead of native Obj
         Obj1_s = [(s[1] - obj1_star) / obj1_star for s in solvers]
         Obj2_s = [(s[2] - obj2_star) / obj2_star for s in solvers]
         # lp-metric Objs
-        wObjs = [weights[i] * Obj1_s[i] + (1-weights[i]) * Obj2_s[i] for i in to_range(weights)]
+        wObjs = [weights[i] * Obj1_s[i] + (1 - weights[i]) * Obj2_s[i] for i in to_range(weights)]
 
     Obj1s = [s[1] for s in solvers]
     Obj2s = [s[2] for s in solvers]
@@ -300,22 +307,22 @@ def draw(optimize_method: str):
     fig, ax1 = plt.subplots()
     # drawing the obj1, obj2 in ax1 (greater numeric scale)
     obj1_line = ax1.plot(weights, Obj1s,
-            linestyle='-', linewidth='2',
-            markersize=msize, marker='.',
-            label="Obj1", color=ax1_color)
+                         linestyle='-', linewidth='2',
+                         markersize=msize, marker='.',
+                         label="Obj1", color=ax1_color)
     obj2_line = ax1.plot(weights, Obj2s,
-            linestyle='-', linewidth='2',
-            markersize=msize, marker='.',
-            label="Obj2", color=ax1_color2)
+                         linestyle='-', linewidth='2',
+                         markersize=msize, marker='.',
+                         label="Obj2", color=ax1_color2)
     ax1.set_ylabel('Single Obj Value', color=ax1_color)
     ax1.tick_params(axis='y', labelcolor=ax1_color)
 
     # drawing lp=metric obj in ax2 (smaller scale)
     ax2 = ax1.twinx()
     obj3_line = ax2.plot(weights, wObjs,
-            linestyle='-', linewidth='2',
-            markersize= msize, marker='.',
-            color = ax2_color, label=optimize_method)
+                         linestyle='-', linewidth='2',
+                         markersize=msize, marker='.',
+                         color=ax2_color, label=optimize_method)
     ax2.set_ylabel(f'{optimize_method} Obj Value', color=ax2_color)
     ax2.tick_params(axis='y', labelcolor=ax2_color)
 
@@ -339,9 +346,8 @@ def draw(optimize_method: str):
             o3 = round(wObjs[wid], 4)
             f.write(f'w: {w}, Obj1: {o1}, Obj2: {o2}, {optimize_method}: {o3} \n')
 
-#%%
+# %%
 # draw('lp-metric')
 
-#%%
+# %%
 # draw('weighted-sum')
-
