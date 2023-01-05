@@ -149,7 +149,7 @@ def solve(weight=0.1,
 
     # 1/5 single-objective 1 with delta to allow infeasibility
     obj1 = SC + TC + quicksum(ScCostMap[s] * PARAMETER['SP'][s] for s in to_range(SET['S']))
-    GAMMA = 0.5
+    GAMMA = 100
     obj1_delta_term = GAMMA * quicksum(delta[j, c, s] * PARAMETER['SP'][s]
                                        for j in to_range(SET['J'])
                                        for c in to_range(SET['C'])
