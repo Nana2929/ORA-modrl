@@ -49,10 +49,20 @@ As Covid-19 threats gradually becomes a normality, it is a must to consider how 
 CSs send resources via self-driving cars, therefore avoid the risk brought by frequent human mobility in between. They also reduces the transportation costs because no drivers are needed. We imagine that CSs should have higher setup cost an dbetter capacity than RDCs.
 The below compares the original paper setting and our proposed setting.
 #### Amiri's Paper Setting
-![alt text](./figures/schemas/amiri_general_schema_of_rd_chain.png)
+
+<figure>
+  <img
+  src="./figures/schemas/amiri_general_schema_of_rd_chain.png" width="300">
+  <figcaption>Figure 1. General resource distribution chain schema of Amiri's paper </figcaption>
+
 
 #### Our Setting
-![alt text](./figures/schemas/general_schema_of_rd_chain_revised.png)
+
+<figure>
+  <img
+  src="./figures/schemas/general_schema_of_rd_chain_revised.png" width="300">
+  <figcaption>Figure 2. Our revised general resource distribution chain schema </figcaption>
+
 
 
 ### Problem Definition
@@ -99,8 +109,8 @@ In brief, we would like to mainly follow Amiri's paper formulation and multi-obj
     - $C_{ijcs}$: transportation cost from supplier $i$ to candidate point $j$ with commodity $c$ under scenario $s$.
     - $C_{jkcs}$: transportation cost from candidate point $j$ to AA $k$ with commodity $c$ under scenario $s$.
     - $D_{kcs}$: amount of demand of commodity $c$ under scenario $s$.
-    - $\rho_{jcs}$: fraction of stocked materials of commodity $c$ remains usable at candidate point $j$ under scenario $s$ ($0 \leq \rho_{jcs} \leq 1$)
-    - $\rho_{ics}$: fraction of stokced materials of commodity $c$ remains usdables at supplier $i$ under scenario $s$ ($0 \leq \rho_{ics} \leq 1$)
+    - $\rho_{jcs}$: fraction of stocked materials of commodity $c$ remains usable at candidate point $j$ under scenario $s$ ($0 \leq \rho_{jcs} \leq 1$).
+    - $\rho_{ics}$: fraction of stokced materials of commodity $c$ remains usdables at supplier $i$ under scenario $s$ ($0 \leq \rho_{ics} \leq 1$).
 
 - Decision Variables
 
@@ -155,8 +165,8 @@ In brief, we would like to mainly follow Amiri's paper formulation and multi-obj
     (5) **RDC Capacity Constraint**: the amount of commodities sent from supplier $i$ to RDC $j$ should not exceed the capacity of the RDC. Similarly, the amount of commodities sent from supplier $i$ to CS $j$ should not exceed the capacity of the CS.
     <!-- (30) -->
 
-    $$\Sigma_{i \in I}\Sigma_{c \in C} v_cQ_{ijc} \leq CapSize^R \cdot \alpha_j \forall j \in J\\
-    \Sigma_{i \in I}\Sigma_{c \in C} v_cQ_{ijc} \leq CapSize^C \cdot \beta_j \forall j \in J$$
+    $$\Sigma_{i \in I}\Sigma_{c \in C} v_cQ_{ijc} \leq CapSize^R \cdot \alpha_j \forall j \in J$$
+    $$\Sigma_{i \in I}\Sigma_{c \in C} v_cQ_{ijc} \leq CapSize^C \cdot \beta_j \forall j \in J$$
 
     (6) **Supplier Capacity Constraint (in preparedness phase):** The amount of commodities a supplier sends out to other places should not exceed the supplier's own capacity (before the disaster).
      <!-- (32) -->
@@ -195,7 +205,7 @@ $$\min w * Obj_1 + (1 - w) * Obj_2$$
 #### Lp-Metric Method
 The Lp-metric method aims to reduce the digression btween objective functions and their ideal solution obtained by indiviually optimizing them. In order to obtain the $Obj^*$, we need to solve the problem with only one objective at a time (optimize twice) and then plug in the $Obj^*$ values, so there's 3 times of optimization in total.
 
-$$\min w * \frac{Obj_1 - Obj_1^*}{Obj_1^*} + (1 - w) * \frac{Obj_2 - Obj_2^*}{Obj_2^*}$$
+$$\min w * {\frac{Obj_1 - Obj_1^*}{Obj_1^*}} + (1 - w) * {\frac{Obj_2 - Obj_2^*}{Obj_2^*}}$$
 
 
 
@@ -223,11 +233,11 @@ Note that $I$ is a subset of $J$, and $J = K$ in terms of the distance statistic
 
 <figure>
   <img
-  src="./figures/data/supplier_capacity.png" width="200">
+  src="./figures/data/supplier_capacity.png" width="300">
   <figcaption>Figure 2. Supplier and their capacity with respect to commodity type</figcaption>
 </figure>
   <img
-  src="./figures/data/rho_remains_usable.png" width="300">
+  src="./figures/data/rho_remains_usable.png" width="500">
 
   Figure 5. $\rho_{jcs}$ and $\rho_{ics}$; the fraction of stocked materials that remain usable (unit: %).
 
@@ -241,7 +251,7 @@ Note that $I$ is a subset of $J$, and $J = K$ in terms of the distance statistic
 <figure>
   <img
   src="./figures/data/demand_under_scenario.png"
-  width="300">
+  width="500">
   <figcaption>Figure 4. Demands of each AA under different scenarios.</figcaption>
 </figure>
 
