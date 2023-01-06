@@ -12,7 +12,8 @@ Team B
 ---
 
 ## Table of Contents
-1. [Introduction](#Introduction)
+
+<!-- 1. [Introduction](#Introduction)
     1.1 [Background: Disaster Relief Logistics](#Background:-Disaster-Relief-Logistics)
     1.2 [Abbreviation](#Abbreviation)
     1.3 [Motivation](#Motivation)
@@ -27,7 +28,7 @@ Team B
     3.4 [Weight Analysis](#weight-analysis)
     3.5 [Constraint on Number of CS/RDC Analysis](#Constraint-on-Number-of-CS/RDC-Analysis)
 4. [Issues](#issues)
-5. [References](#References)
+5. [References](#References) -->
 
 
 ## Introduction
@@ -47,21 +48,17 @@ AA: Affected Area
 ### Motivation
 As Covid-19 threats gradually becomes a normality, it is a must to consider how to respond to a disaster under the pandemic. An imaginary scenario is that an earthquake damages a hospital that quarantines many Covid-19 confirmed cases, and now the resources need to be sent to this hospital without further human contacts. In this case, some contactless stations (CSs) need to be set up in place of the Amiri's proposed RDCs.
 CSs send resources via self-driving cars, therefore avoid the risk brought by frequent human mobility in between. They also reduces the transportation costs because no drivers are needed. We imagine that CSs should have higher setup cost an dbetter capacity than RDCs.
-The below compares the original paper setting and our proposed setting.
-#### Amiri's Paper Setting
+Figure 1 and 2 compares the original paper setting versus our proposed setting.
 
 <figure>
   <img
   src="./figures/schemas/amiri_general_schema_of_rd_chain.png" width="300">
   <figcaption>Figure 1. General resource distribution chain schema of Amiri's paper </figcaption>
 
-
-#### Our Setting
-
 <figure>
   <img
   src="./figures/schemas/general_schema_of_rd_chain_revised.png" width="300">
-  <figcaption>Figure 2. Our revised general resource distribution chain schema </figcaption>
+  <figcaption>Figure 2. Our proposed general resource distribution chain schema </figcaption>
 
 
 
@@ -109,8 +106,8 @@ In brief, we would like to mainly follow Amiri's paper formulation and multi-obj
     - $C_{ijcs}$: transportation cost from supplier $i$ to candidate point $j$ with commodity $c$ under scenario $s$.
     - $C_{jkcs}$: transportation cost from candidate point $j$ to AA $k$ with commodity $c$ under scenario $s$.
     - $D_{kcs}$: amount of demand of commodity $c$ under scenario $s$.
-    - $\rho_{jcs}$: fraction of stocked materials of commodity $c$ remains usable at candidate point $j$ under scenario $s$ ($0 \leq \rho_{jcs} \leq 1$).
-    - $\rho_{ics}$: fraction of stokced materials of commodity $c$ remains usdables at supplier $i$ under scenario $s$ ($0 \leq \rho_{ics} \leq 1$).
+    - $\rho_{jcs}$: fraction of stocked materials of commodity $c$ remains usable at candidate point $j$ under scenario $s$ ( $0 \leq \rho_{jcs} \leq 1$ ).
+    - $\rho_{ics}$: fraction of stokced materials of commodity $c$ remains usdables at supplier $i$ under scenario $s$ ( $0 \leq \rho_{ics} \leq 1$ ).
 
 - Decision Variables
 
@@ -205,7 +202,7 @@ $$\min w * Obj_1 + (1 - w) * Obj_2$$
 #### Lp-Metric Method
 The Lp-metric method aims to reduce the digression btween objective functions and their ideal solution obtained by indiviually optimizing them. In order to obtain the $Obj^*$, we need to solve the problem with only one objective at a time (optimize twice) and then plug in the $Obj^*$ values, so there's 3 times of optimization in total.
 
-$$\min w * {\frac{Obj_1 - Obj_1^*}{Obj_1^*}} + (1 - w) * {\frac{Obj_2 - Obj_2^*}{Obj_2^*}}$$
+$$\min w * \frac{Obj_1 - {Obj_1}^* }{{Obj_1}^* } + (1 - w) * \frac{Obj_2 - {Obj_2}^* }{{Obj_2}^* }$$
 
 
 
@@ -215,8 +212,8 @@ $$\min w * {\frac{Obj_1 - Obj_1^*}{Obj_1^*}} + (1 - w) * {\frac{Obj_2 - Obj_2^*}
 ### Data Collection
 We use the data in case study from Amiri's paper. The scene is set at a well-populated region of Iran located near sourthern Central Alborz, with several active faults surrounding (hence the disaster is imagined to be an earthquake).
 1. $I$ contains 5 suppliers, including Sari, Qazvin, Tehran, Arak and Isfahan.
-2. $J$ contains 15 candidate nodes, including Gorgan, Semnan, Sari, Rasht, Qazvin, Karaj, Tehran, Varamin, Roibatkarim, Islamshahr, Shahriar, Gom, Arak, Isfahan and Kashan. Their pair-wise distance statistics are shown in figure 3. The setup costs of an RDC ($F^R$) and a CS ($F^C$) are shown in figure 3.
-3. $K$ contains 15 demand points (AAs). The first 8 nodes are low-risk AAs while the later 7 are high-risk ones (the former is denoted $K/K'$ while the latter is denoted $K'$). Their demands under all scenarios ($D_{kcs}$) are shown in figure 4. The capacity of AA is an arbitrary value set to 16 (same unit as the capacity of an RDC and CS).
+2. $J$ contains 15 candidate nodes, including Gorgan, Semnan, Sari, Rasht, Qazvin, Karaj, Tehran, Varamin, Roibatkarim, Islamshahr, Shahriar, Gom, Arak, Isfahan and Kashan. Their pair-wise distance statistics are shown in figure 3. The setup costs of an RDC ( $F^R$ ) and a CS ( $F^C$ ) are shown in figure 3.
+3. $K$ contains 15 demand points (AAs). The first 8 nodes are low-risk AAs while the later 7 are high-risk ones (the former is denoted $K/K'$ while the latter is denoted $K'$). Their demands under all scenarios ( $D_{kcs}$ ) are shown in figure 4. The capacity of AA is an arbitrary value set to 16 (same unit as the capacity of an RDC and CS).
 4. $C$ is the set of commodities, here we use water, food, and shelter.
 5. $S$ is the set of scenarios with occurrence probabilites $p_s = [0.45, 0.3, 0.1, 0.15]$.
 
@@ -302,7 +299,7 @@ Figure [I_kcs] and [b_kcs] represent the inventory and shortage amount held at A
 Deterministic |![](./figures/dm_lp-metric.png)  |  ![](./figures/dm_weighted-sum.png)
 Stochastic |![](./figures/sp_lp-metric.png)  |  ![](./figures/sp_weighted-sum.png)
 
-With single-objective optimization, we can minimize the total costs to $11,950$ ($10^6\$$) and the maximum shortage costs to $1,364$ ($10^6\$$) for stochastic model with Lp-metric. The combined objective of weighted-sum and Lp-metrics are then chosen to use to coordinate the 2 objectives.
+With single-objective optimization, we can minimize the total costs to $11,950$ ( $10^6\$$ ) and the maximum shortage costs to $1,364$ ( $10^6\$$ ) for stochastic model with Lp-metric. The combined objective of weighted-sum and Lp-metrics are then chosen to use to coordinate the 2 objectives.
 In terms of the modeling method, the stochastic model gives more fluctuating line than the deterministic one. In terms of the optimization method, the weighted sum gives a very stable tendency; as $w$ increases, objective 1 is placed more weight and therefore the weighted objective grows rapidly. Due to the different numeric scales for both objectives; objective 1 accumulates all costs so it falls around $10^4$, while objective 2 is around $10^3$ (5 times smaller). Therefore, the Lp-metric, which aims to minimize the digression between the objective and its ideal solution, is more suitable for this problem. The overall tendency of the 2 optimization methods are the opposite: as $w$ increases, weighted-sum objective grows, while Lp-metric objective decreases.
 As for the single-objectives, it's clear that objective 1 and 2 have a trade-off in=between. A higher total cost leads to higher satisfaction (less shortage in AAs), vice versa.
 
