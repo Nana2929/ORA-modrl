@@ -200,7 +200,7 @@ $$\min w * Obj_1 + (1 - w) * Obj_2$$
 
 
 #### Lp-Metric Method
-The Lp-metric method aims to reduce the digression btween objective functions and their ideal solution obtained by indiviually optimizing them. In order to obtain the $Obj^*$, we need to solve the problem with only one objective at a time (optimize twice) and then plug in the $Obj^*$ values, so there's 3 times of optimization in total.
+The Lp-metric method aims to reduce the digression btween objective functions and their ideal solution obtained by indiviually optimizing them. In order to obtain the ${Obj^*}$, we need to solve the problem with only one objective at a time (optimize twice) and then plug in the ${Obj^*}$ values, so there's 3 times of optimization in total.
 
 $$\min w * \frac{Obj_1 - {Obj_1}^* }{{Obj_1}^* } + (1 - w) * \frac{Obj_2 - {Obj_2}^* }{{Obj_2}^* }$$
 
@@ -310,13 +310,13 @@ Stochastic Model
 
 |                            |           CS  &nbsp; &nbsp;            |            RDC &nbsp; &nbsp;            |            RDC+CS &nbsp; &nbsp;            |
 |:---------------------------|:--------------------------------------:|:---------------------------------------:|:------------------------------------------:|
-| w/o deviation ( $\delta$ ) |    ![](./figures/sp_cs_limited.png)    |    ![](./figures/sp_rdc_limited.png)    |    ![](./figures/sp_cs_rdc_limited.png)    |
-| w/ deviation ( $\delta$ )  | ![](./figures/sp_cs_limited-delta.png) | ![](./figures/sp_rdc_limited-delta.png) | ![](./figures/sp_cs_rdc_limited-delta.png) |
+| w/o penalty ( $\delta$ ) |    ![](./figures/sp_cs_limited.png)    |    ![](./figures/sp_rdc_limited.png)    |    ![](./figures/sp_cs_rdc_limited.png)    |
+| w/ penalty( $\delta$ )  | ![](./figures/sp_cs_limited-delta.png) | ![](./figures/sp_rdc_limited-delta.png) | ![](./figures/sp_cs_rdc_limited-delta.png) |
 
 The deviation ( $\delta$ ) indicates an increased commodity inventory penalized by the last
 term of the first objective function. It can be observed that after adding the penalty term, the model can be further optimized.
 In addition, by appropriately limiting the number of CS and RDC builds, it is very helpful to minimize the cost.
-Experimental results show that setting the maximum number of CSs to 8 and the maximum number of RDCs to 9 brings the best results. Limiting the number of RDCs to less than 12 works the best if there is a delta term.
+Experimental results show that setting the maximum number of CSs to 8 and the maximum number of RDCs to 9 brings the best results. Limiting the number of RDCs to less than 12 works the best if there is a penalty term.
 
 ## Issues
 
