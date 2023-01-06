@@ -312,14 +312,14 @@ Stochastic Model
 w/o Delta(δ) |![](./figures/sp_cs_limited.png)  |  ![](./figures/sp_rdc_limited.png)  |  ![](./figures/sp_cs_rdc_limited.png) |
 w/ Delta(δ)|![](./figures/sp_cs_limited-delta.png)  |  ![](./figures/sp_rdc_limited-delta.png)  |  ![](./figures/sp_cs_rdc_limited-delta.png) |
 
-The deviation ($\delta$) indicates an increased commodity inventory penalized by the last
+The deviation ( $\delta$ ) indicates an increased commodity inventory penalized by the last
 term of the first objective function. It can be observed that after adding the penalty term, the model can be further optimized.
 
 
 
 ## Issues
 
-A node could be a RDC, a CS or a null node that does not open any centers, however, our model only allows a node to be either a RDC or a CS. We attempt to fix the problem by adding the penalty term $\delta$, and let the model optimize for infeasibility. Unfortunately, the model still goes infeasible under conditions that the numbers of CS and RDC do not sum to the total number of candidate nodes ($|J|$).
+A node could be a RDC, a CS or a null node that does not open any centers, however, our model only allows a node to be either a RDC or a CS. We attempt to fix the problem by adding the penalty term $\delta$, and let the model optimize for infeasibility. Unfortunately, the model still goes infeasible under conditions that the numbers of CS and RDC do not sum to the total number of candidate nodes ( $|J|$ ).
 
 ## Conclusion
 
