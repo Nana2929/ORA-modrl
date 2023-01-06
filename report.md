@@ -284,8 +284,11 @@ Before analysis, it should be first noted that the numeric scales for both objec
 In terms of the modeling method, the stochastic model gives more flunctuating line than the deterministic one. With single-objective optimization, we can minimize the total costs to $11,950$ ($10^6\$$) and the maximum shortage costs to $1364$ ($10^6\$$).
 
 ### Constraint on Number of CS/RDC Analysis
-@Mark
-
+Stochastic Model
+| | CS  &nbsp; &nbsp;| RDC &nbsp; &nbsp;| RDC+CS &nbsp; &nbsp;
+| :------------ | :-------------------------:| -------------:|
+w/o Delta |![](./figures/sp_cs_limited.png)  |  ![](./figures/sp_rdc_limited.png)  |  ![](./figures/sp_cs_rdc_limited.png)
+w/ Delta |![](./figures/sp_cs_limited-delta.png)  |  ![](./figures/sp_rdc_limited-delta.png)  |  ![](./figures/sp_cs_rdc_limited-delta.png)
 
 ### Issues
 目前發現一個問題是同一個節點一定會被指定成RDC/CS 其中之一，猜測有可能跟delta設成0有關。
