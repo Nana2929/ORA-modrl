@@ -1,6 +1,6 @@
-## ORA Term Project 2022
-### Disaster Relief Logistics with Contactless Delivery Policy
-### 2022 Fall
+
+## Disaster Relief Logistics with Contactless Delivery Policy
+### ORA Term Project (2022 Fall)
 
 Team B
 
@@ -41,13 +41,15 @@ Our project is inspired by "A multi-objective robust stochastic programming mode
 ### Abbreviations
 
 RDC: Resource Distribution Center
+
 CS: Contactless Station
+
 AA: Affected Area
 
 
 ### Motivation
 As Covid-19 threats gradually becomes a normality, it is a must to consider how to respond to a disaster under the pandemic. An imaginary scenario is that an earthquake damages a hospital that quarantines many Covid-19 confirmed cases, and now the resources need to be sent to this hospital without further human contacts. In this case, some contactless stations (CSs) need to be set up in place of the Amiri's proposed RDCs.
-CSs send resources via self-driving cars, therefore avoid the risk brought by frequent human mobility in between. They also reduces the transportation costs because no drivers are needed. We imagine that CSs should have higher setup cost an dbetter capacity than RDCs.
+CSs send resources via self-driving cars, therefore avoid the risk brought by frequent human mobility in between. They also reduce the transportation costs because no drivers are needed. We imagine that CSs should have higher setup cost and better capacity than RDCs.
 Figure 1 and 2 compares the original paper setting versus our proposed setting.
 
 <figure>
@@ -184,7 +186,7 @@ In brief, we would like to mainly follow Amiri's paper formulation and multi-obj
     - Objective 1: minimize the total costs
     $SC + TC_{pre} + TC_{post}+ IC + SHC$
     Sometimes the input parameters make the model infeasible, so we add a penalty term $\delta$ to penalize the solutions that fail to meet the demand in a scenario or violate certain constraints, while keeping the model feasible. The final objective 1 is:
-    $SC + TC_{pre} + TC_{post}+ IC + SHC + \gamma\Sigma_{j \in J}\Sigma_{c \in C}\Sigma_{s \in S}\delta_{jcs}$, where $\gamma$ is the weight of the penalty term.
+    $SC + TC_{pre} + TC_{post}+ IC + SHC + \gamma\Sigma_{j \in J}\Sigma_{c \in C}\Sigma_{s \in S}\delta_{jcs}$, where $\gamma$ is the penalty weight of the deviation term.
     - Objective 2: maximize the total satisfaction; i.e., minimize the shortage costs of the least satisfied AA under all scenarios.
     $\Sigma_{s \in S}p_s(\Sigma_{c \in C}\max_{k \in K}{b_{cks}})$
 
@@ -310,17 +312,17 @@ Stochastic Model
 
 |                            |           CS  &nbsp; &nbsp;            |            RDC &nbsp; &nbsp;            |            RDC+CS &nbsp; &nbsp;            |
 |:---------------------------|:--------------------------------------:|:---------------------------------------:|:------------------------------------------:|
-| w/o penalty ( $\delta$ ) |    ![](./figures/sp_cs_limited.png)    |    ![](./figures/sp_rdc_limited.png)    |    ![](./figures/sp_cs_rdc_limited.png)    |
-| w/ penalty( $\delta$ )  | ![](./figures/sp_cs_limited-delta.png) | ![](./figures/sp_rdc_limited-delta.png) | ![](./figures/sp_cs_rdc_limited-delta.png) |
+| w/o deviation ( $\delta$ ) |    ![](./figures/sp_cs_limited.png)    |    ![](./figures/sp_rdc_limited.png)    |    ![](./figures/sp_cs_rdc_limited.png)    |
+| w/ deviation ( $\delta$ )  | ![](./figures/sp_cs_limited-delta.png) | ![](./figures/sp_rdc_limited-delta.png) | ![](./figures/sp_cs_rdc_limited-delta.png) |
 
 The deviation ( $\delta$ ) indicates an increased commodity inventory penalized by the last
-term of the first objective function. It can be observed that after adding the penalty term, the model can be further optimized.
+term of the first objective function. It can be observed that after adding the deviation term, the model can be further optimized.
 In addition, by appropriately limiting the number of CS and RDC builds, it is very helpful to minimize the cost.
-Experimental results show that setting the maximum number of CSs to 8 and the maximum number of RDCs to 9 brings the best results. Limiting the number of RDCs to less than 12 works the best if there is a penalty term.
+Experimental results show that setting the maximum number of CSs to 8 and the maximum number of RDCs to 9 brings the best results. Limiting the number of RDCs to less than 12 works the best if there is a deviation term.
 
 ## Issues
 
-A node could be an RDC, a CS or a null node that does not open any centers, however, our model only allows a node to be either a RDC or a CS. We attempt to fix the problem by adding the penalty term $\delta$, and let the model optimize for infeasibility. Unfortunately, the model still goes infeasible under conditions that the numbers of CS and RDC do not sum to the total number of candidate nodes ( $|J|$ ).
+A node could be an RDC, a CS or a null node that does not open any centers, however, our model only allows a node to be either a RDC or a CS. We attempt to fix the problem by adding the deviation term $\delta$, and let the model optimize for infeasibility. Unfortunately, the model still goes infeasible under conditions that the numbers of CS and RDC do not sum to the total number of candidate nodes ( $|J|$ ).
 
 ## Conclusion
 
