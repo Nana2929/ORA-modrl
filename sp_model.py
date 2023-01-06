@@ -3,7 +3,6 @@ import pandas as pd
 from gurobipy import *
 from util import to_range, DATA_PATH, FIG_PATH, getSupplierAADistance, OptimizationMethod
 from typing import List
-from typing import List
 import matplotlib.pyplot as plt
 
 PATH_PREFIX = 'MoDRL_'
@@ -44,7 +43,6 @@ SET = dict(
     C=[c for c in range(df_supplier.shape[1])]  # set of commodities (c)
 )
 
-
 PARAMETER = dict(
     # p=[0.2, 0.3, 0,5], # occurrence probability of scenario `s`
     CAP_SIZE_r=df_setup_cost.iloc[0, 2],  # capacity limit for an RDC
@@ -77,7 +75,7 @@ PARAMETER = dict(
 
 def solve(weight=0.1,
           opt_method=OptimizationMethod.LP_METRIC,
-          single_objval: List[float] = [0, 0], eps=[7, 15 - 7]):
+          single_objval: List[float] = [0, 0], eps=[7, 15 - 7], GAMMA=100, delta_term=True):
     # supplier -> RDC / CS -> AA
     model = Model('Disaster relief logistic model: Discrete Stochastic')
     model.ModelSense = GRB.MINIMIZE
@@ -107,7 +105,7 @@ def solve(weight=0.1,
     # 1/5 delta
     # delta_{jcs}:
     # error vector presents the infeasibility of the model under scneario s
-    delta = model.addVars(j, c, s, vtype=GRB.BINARY, name='delta')
+    delta = model.addVars(j, c, s, vtype=GRB.CONTINUOUS, name='delta')
 
     # defined for linearize or Gurobi limited
     # reference: https://support.gurobi.com/hc/en-us/community/posts/4408734183185-TypeError-unsupported-operand-type-s-for-int-and-GenExpr-
@@ -149,12 +147,12 @@ def solve(weight=0.1,
 
     # 1/5 single-objective 1 with delta to allow infeasibility
     obj1 = SC + TC + quicksum(ScCostMap[s] * PARAMETER['SP'][s] for s in to_range(SET['S']))
-    GAMMA = 100
-    obj1_delta_term = GAMMA * quicksum(delta[j, c, s] * PARAMETER['SP'][s]
-                                       for j in to_range(SET['J'])
-                                       for c in to_range(SET['C'])
-                                       for s in to_range(SET['S']))
-    obj1 = obj1 + obj1_delta_term
+    if delta_term:
+        obj1_delta_term = GAMMA * quicksum(delta[j, c, s] * PARAMETER['SP'][s]
+                                           for j in to_range(SET['J'])
+                                           for c in to_range(SET['C'])
+                                           for s in to_range(SET['S']))
+        obj1 = obj1 + obj1_delta_term
 
     obj2 = quicksum(
         quicksum(b_linearize[s, c] for c in to_range(SET['C'])) * PARAMETER['SP'][s] for s in to_range(SET['S']))
@@ -255,19 +253,19 @@ def solve(weight=0.1,
     model.addConstrs((
         alpha[j] + beta[j] <= 1 for j in to_range(SET['J'])
     ), 'c-34')
+
     EPSILON_r, EPSILON_c = eps
-    model.addConstr(quicksum(alpha[j] for j in to_range(SET['J'])) <= EPSILON_r, 'c-number_of_RDC')
-    model.addConstr(quicksum(beta[j] for j in to_range(SET['J'])) <= EPSILON_c, 'c-number_of_CS')
+    if EPSILON_r > 0:
+        model.addConstr(quicksum(alpha[j] for j in to_range(SET['J'])) <= EPSILON_r, 'c-number_of_RDC')
+    if EPSILON_c > 0:
+        model.addConstr(quicksum(beta[j] for j in to_range(SET['J'])) <= EPSILON_c, 'c-number_of_CS')
+
     model.optimize()
 
-    # print(f'Objective value: {model.objVal}')
-
     return model, obj1, obj2
-    # return model
 
 
 def draw(optimize_method: str):
-
     # weight range
     weights = [0.1 * i for i in range(1, 11)]
     # matplotlib settings
@@ -346,8 +344,122 @@ def draw(optimize_method: str):
             o3 = round(wObjs[wid], 4)
             f.write(f'w: {w}, Obj1: {o1}, Obj2: {o2}, {optimize_method}: {o3} \n')
 
+
 # %%
 # draw('lp-metric')
 
 # %%
 # draw('weighted-sum')
+# %%
+# wieght = 0.1
+# best_cs_n = -1
+# delta_term = False
+# n_limited = range(7, 16)
+# wObjs = []
+# solvers = []
+# models = []
+# for i in n_limited:
+#     m, obj1, obj2 = solve(1, OptimizationMethod.WEIGHTED_SUM, eps=[i, best_cs_n], delta_term=delta_term)
+#     obj1_star = obj1.getValue()
+#     m, obj1, obj2 = solve(0, OptimizationMethod.WEIGHTED_SUM, eps=[i, best_cs_n], delta_term=delta_term)
+#     obj2_star = obj2.getValue()
+#     objstars = [obj1_star, obj2_star]
+#     s = solve(wieght, OptimizationMethod.LP_METRIC, objstars, eps=[i, best_cs_n], delta_term=delta_term)
+#     solvers.append(s)
+#     models.append(s[0])
+#
+#     Obj1_s = (s[1] - obj1_star) / obj1_star
+#     Obj2_s = (s[2] - obj2_star) / obj2_star
+#     wObj = wieght * Obj1_s + (1 - wieght) * Obj2_s
+#     wObjs.append(wObj.getValue())
+#
+# color = {
+#     'obj1': '#AD4134',
+#     'obj2': '#FA723C',
+#     'wobj': '#154DAD'
+# }
+# fig, ax1 = plt.subplots()
+# ax2 = ax1.twinx()
+# l1 = ax1.plot(n_limited, [s[1].getValue() for s in solvers],
+#               label='Obj1',
+#               linestyle='-', linewidth='2',
+#               markersize=12, marker='.', color=color['obj1'])
+# l2 = ax1.plot(n_limited, [s[2].getValue() for s in solvers],
+#               label='Obj2',
+#               linestyle='-', linewidth='2',
+#               markersize=12, marker='.', color=color['obj2'])
+# l3 = ax2.plot(n_limited, wObjs,
+#               label='lp-metric',
+#               linestyle='-', linewidth='2',
+#               markersize=12, marker='.', color=color['wobj'])
+#
+# ax1.set_ylabel('objective value', color=color['obj1'])
+# ax1.set_xlabel('upper-bound of RDC\'s number')
+# ax1.tick_params(axis='y', labelcolor=color['obj1'])
+# ax2.set_ylabel('objective value', color=color['wobj'])
+# ax2.tick_params(axis='y', labelcolor=color['wobj'])
+# ax2.ticklabel_format(useOffset=False)
+#
+# lns = l1 + l2 + l3
+# labs = [l.get_label() for l in lns]
+# plt.legend(lns, labs, loc=5)
+# plt.xticks(n_limited)
+# plt.title('Number constraint of RDC')
+# plt.savefig(FIG_PATH + '/sp_rdc_limited.png')
+# plt.show()
+# %%
+wieght = 0.1
+n_limited = range(1, 16)
+delta_term = False
+wObjs = []
+solvers = []
+models = []
+for i in n_limited:
+    m, obj1, obj2 = solve(1, OptimizationMethod.WEIGHTED_SUM, eps=[-1, i], delta_term=delta_term)
+    obj1_star = obj1.getValue()
+    m, obj1, obj2 = solve(0, OptimizationMethod.WEIGHTED_SUM, eps=[-1, i], delta_term=delta_term)
+    obj2_star = obj2.getValue()
+    objstars = [obj1_star, obj2_star]
+    s = solve(wieght, OptimizationMethod.LP_METRIC, objstars, eps=[-1, i], delta_term=delta_term)
+    solvers.append(s)
+    models.append(s[0])
+
+    Obj1_s = (s[1] - obj1_star) / obj1_star
+    Obj2_s = (s[2] - obj2_star) / obj2_star
+    wObj = wieght * Obj1_s + (1 - wieght) * Obj2_s
+    wObjs.append(wObj.getValue())
+
+color = {
+    'obj1': '#AD4134',
+    'obj2': '#FA723C',
+    'wobj': '#154DAD'
+}
+fig, ax1 = plt.subplots()
+ax2 = ax1.twinx()
+l1 = ax1.plot(n_limited, [s[1].getValue() for s in solvers],
+              label='Obj1',
+              linestyle='-', linewidth='2',
+              markersize=12, marker='.', color=color['obj1'])
+l2 = ax1.plot(n_limited, [s[2].getValue() for s in solvers],
+              label='Obj2',
+              linestyle='-', linewidth='2',
+              markersize=12, marker='.', color=color['obj2'])
+l3 = ax2.plot(n_limited, wObjs,
+              label='lp-metric',
+              linestyle='-', linewidth='2',
+              markersize=12, marker='.', color=color['wobj'])
+
+ax1.set_ylabel('objective value', color=color['obj1'])
+ax1.set_xlabel('upper-bound of CS\'s number')
+ax1.tick_params(axis='y', labelcolor=color['obj1'])
+ax2.set_ylabel('objective value', color=color['wobj'])
+ax2.tick_params(axis='y', labelcolor=color['wobj'])
+ax2.ticklabel_format(useOffset=False)
+
+lns = l1 + l2 + l3
+labs = [l.get_label() for l in lns]
+plt.legend(lns, labs, loc=5)
+plt.xticks(n_limited)
+plt.title('Number constraint of CS')
+plt.savefig(FIG_PATH + '/sp_cs_limited.png')
+plt.show()
