@@ -274,7 +274,7 @@ Table . Supplier to CS transportation amount during response phase
 
 ### Weight Analysis
 @Nana
-| | Lp-metric  &nbsp; &nbsp;| Weighted-sum &nbsp; &nbsp;
+| | Lp-metric  &nbsp; &nbsp;| Weighted-sum &nbsp; &nbsp; |
 | :------------ | :-------------------------:| -------------:|
 Deterministic |![](./figures/dm_lp-metric.png)  |  ![](./figures/dm_weighted-sum.png)
 Stochastic |![](./figures/sp_lp-metric.png)  |  ![](./figures/sp_weighted-sum.png)
@@ -285,10 +285,12 @@ In terms of the modeling method, the stochastic model gives more flunctuating li
 
 ### Constraint on Number of CS/RDC Analysis
 Stochastic Model
-| | CS  &nbsp; &nbsp;| RDC &nbsp; &nbsp;| RDC+CS &nbsp; &nbsp;
-| :------------ | :-------------------------:| -------------:|
-w/o Delta |![](./figures/sp_cs_limited.png)  |  ![](./figures/sp_rdc_limited.png)  |  ![](./figures/sp_cs_rdc_limited.png)
-w/ Delta |![](./figures/sp_cs_limited-delta.png)  |  ![](./figures/sp_rdc_limited-delta.png)  |  ![](./figures/sp_cs_rdc_limited-delta.png)
+| | CS  &nbsp; &nbsp;| RDC &nbsp; &nbsp;| RDC+CS &nbsp; &nbsp; |
+| :------------ | :-------------------------:| -------------:| -------------:|
+w/o Delta |![](./figures/sp_cs_limited.png)  |  ![](./figures/sp_rdc_limited.png)  |  ![](./figures/sp_cs_rdc_limited.png) |
+Delta |![](./figures/sp_cs_limited-delta.png)  |  ![](./figures/sp_rdc_limited-delta.png)  |  ![](./figures/sp_cs_rdc_limited-delta.png) |
+
+
 
 ### Issues
 目前發現一個問題是同一個節點一定會被指定成RDC/CS 其中之一，猜測有可能跟delta設成0有關。
