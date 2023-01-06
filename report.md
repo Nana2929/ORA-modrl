@@ -308,10 +308,10 @@ As for the single-objectives, it's clear that objective 1 and 2 have a trade-off
 ### Constraint on Number of CS/RDC Analysis
 Stochastic Model
 
-|                             |           CS  &nbsp; &nbsp;            |            RDC &nbsp; &nbsp;            |            RDC+CS &nbsp; &nbsp;            |
-|:----------------------------|:--------------------------------------:|:---------------------------------------:|:------------------------------------------:|
-| w/o Delta ($\delta$) &nbsp; |    ![](./figures/sp_cs_limited.png)    |    ![](./figures/sp_rdc_limited.png)    |    ![](./figures/sp_cs_rdc_limited.png)    |
-| w/ Delta ($\delta$)  &nbsp; | ![](./figures/sp_cs_limited-delta.png) | ![](./figures/sp_rdc_limited-delta.png) | ![](./figures/sp_cs_rdc_limited-delta.png) |
+|                               |           CS  &nbsp; &nbsp;            |            RDC &nbsp; &nbsp;            |            RDC+CS &nbsp; &nbsp;            |
+|:------------------------------|:--------------------------------------:|:---------------------------------------:|:------------------------------------------:|
+| w/o Delta ( $\delta$ ) &nbsp; |    ![](./figures/sp_cs_limited.png)    |    ![](./figures/sp_rdc_limited.png)    |    ![](./figures/sp_cs_rdc_limited.png)    |
+| w/ Delta ( $\delta$ )  &nbsp; | ![](./figures/sp_cs_limited-delta.png) | ![](./figures/sp_rdc_limited-delta.png) | ![](./figures/sp_cs_rdc_limited-delta.png) |
 
 The deviation ( $\delta$ ) indicates an increased commodity inventory penalized by the last
 term of the first objective function. It can be observed that after adding the penalty term, the model can be further optimized.
