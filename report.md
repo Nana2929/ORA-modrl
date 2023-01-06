@@ -158,19 +158,19 @@ In brief, we would like to mainly follow Amiri's paper formulation and multi-obj
     $$\alpha_j + \beta_j \leq 1 \;\forall j \in J$$
 
     (9) **CS Number Constraint:** $\epsilon$ is the maximum number of CSs allowed in the network.
-    $$
-    \color{green} \Sigma_{j \in J} \beta_j \leq \epsilon
-    $$
-- Objectives
 
+    $$\color{green} \Sigma_{j \in J} \beta_j \leq \epsilon$$
+- Objectives
     - Objective 1: minimize the total costs
     $SC + TC_{pre} + TC_{post}+ IC + SHC$
+    Sometimes the input parameters make the model infeasible, so we add a penalty term $\delta$ to penalize the solutions that fail to meet the demand in a scenario or violate certain constraints, while keeping the model feasible. The final objective 1 is:
+    $SC + TC_{pre} + TC_{post}+ IC + SHC + \gamma\Sigma_{j \in J}\Sigma_{c \in C}\Sigma_{s \in S}\delta_{jcs}$, where $\gamma$ is the weight of the penalty term.
     - Objective 2: maximize the total satisfaction; i.e., minimize the shortage costs of the least satisfied AA under all scenarios.
     $\Sigma_{s \in S}p_s(\Sigma_{c \in C}\max_{k \in K}{b_{cks}})$
 
 
-### Multi-Objective Optimization
 
+### Multi-Objective Optimization
 
  There are several methods to solve a multi-objective problem, as can be found in past literatures (Mahjoob, M. and Abbasian, P., 2018; Kong, Z. Y., How, B. S., Mahmoud, A., & Sunarso, J., 2022; Yang, Z. et al., 2014). We employ the following 2 methods to combine our 2 objectives together, and solve the problem as a single-objective problem.
 
@@ -190,14 +190,15 @@ $$\min w * \frac{Obj_1 - Obj_1^*}{Obj_1^*} + (1 - w) * \frac{Obj_2 - Obj_2^*}{Ob
 ## Data Collection and Analysis Result
 
 ### Data Collection
-We use the data in case study from Amiri's paper. The scene is set at a well-populated region of Iran located near sourthern Central Alborz, with several active faults surrounding (hence the disaster is imagined to be an earthquake). We consider
+We use the data in case study from Amiri's paper. The scene is set at a well-populated region of Iran located near sourthern Central Alborz, with several active faults surrounding (hence the disaster is imagined to be an earthquake).
 1. $I$ contains 5 suppliers, including Sari, Qazvin, Tehran, Arak and Isfahan.
-2. $J$ contains 15 candidate points, including Gorgan, Semnan, Sari, Rasht, Qazvin, Karaj, Tehran, Varamin, Roibatkarim, Islamshahr, Shahriar, Gom, Arak, Isfahan and Kashan. Their pair-wise distance statistics are shown in figure 3. The setup costs of an RDC and a CS are shown in figure 3.
-3. $K$ contains 15 demand points (AAs) which are the same as $J$. The first 8 nodes are low-risk AAs while the later 7 are high-risk ones (the former is denoted $K/K'$ while the latter is denoted $K'$). Their demands under all scenarios ($D_{kcs}$) are shown in figure 4.
+2. $J$ contains 15 candidate nodes, including Gorgan, Semnan, Sari, Rasht, Qazvin, Karaj, Tehran, Varamin, Roibatkarim, Islamshahr, Shahriar, Gom, Arak, Isfahan and Kashan. Their pair-wise distance statistics are shown in figure 3. The setup costs of an RDC ($F^R$) and a CS ($F^C$) are shown in figure 3.
+3. $K$ contains 15 demand points (AAs). The first 8 nodes are low-risk AAs while the later 7 are high-risk ones (the former is denoted $K/K'$ while the latter is denoted $K'$). Their demands under all scenarios ($D_{kcs}$) are shown in figure 4. The capacity of AA is an arbitrary value set to 16 (same unit as the capacity of an RDC and CS).
 4. $C$ is the set of commodities, here we use water, food, and shelter.
-5. $S$ is the set of scenarios with probabilites $p_s = [0.45, 0.3, 0.1, 0.15]$.
+5. $S$ is the set of scenarios with occurrence probabilites $p_s = [0.45, 0.3, 0.1, 0.15]$.
 
-Note that $I$ is a subset of $J$, and $J = K$. Although it could seem unreasonable that the resource sources and the demand points are the same nodes in calculation, we assume that the affected area and the center building are located in different geographical locations; they are simply within the same city. Same reasoning goes for the subset condition of $I \subseteq J$.
+Note that $I$ is a subset of $J$, and $J = K$ in terms of the distance statistics. We assume that, for example, if Sari is an affected area and a RDC in a solution, it means the area and the center are located in different geographical locations within the province Sari. In this way we could reuse the distance statistis. We virtually see $J$ and $K$ as 2 sets of nodes with different property to avoid confusion. Same reasoning goes for the subset condition of $I \subseteq J$.
+
 
 <figure>
   <img
@@ -234,8 +235,8 @@ Note that $I$ is a subset of $J$, and $J = K$. Although it could seem unreasonab
 ## Result Analysis
 
 ### Modeling
-We start simple and build a **deterministic model** first. This model assumes in the response phase, we have perfect knowledge of which scenario would happen, so the *demand, transportation cost, and the fraction of stocked materials that remain usable* are pre-determined. In the following experiemnts, we choose to use the scenario $s1$. We do not extensively discuss on this model but record its statistics for reference.
-Our final model is the stochastic model that considers 4 scenarios, representing different epicenters and potential earthquake intensity.
+We start simple with a **deterministic model** first. It assumes that in the response phase, we have perfect knowledge of which scenario would happen, so the *demand, transportation cost, and the fraction of stocked materials that remain usable* are pre-determined. In the following experiments, we choose to use the scenario $s1$. We do not extensively discuss on this model but record its statistics for reference.
+Our final model is the **stochastic model**, which has the same setting as the deterministic one in preparedness phase; in response phase, it considers 4 scenarios representing earthquakes of different epicenters and potential earthquake intensity.
 
 
 ### Implementation Details
@@ -244,33 +245,32 @@ In Gurobi implementation, we use the `setObjectiveN()`  that defaults to weighte
 
 ### Solution
 
-The final stochastic programming model has 4,422 continuous variables and 210 binary variables; 666 quadratic constraints and 12 general constraints. The optimization process takes 0.81 seconds for over 4,000 simplex iterations. The below shows the statistics for the configuration:
+The final stochastic programming model has 4,422 continuous variables and 210 binary variables; 666 quadratic constraints and 12 general constraints. The optimization procedure takes 0.81 seconds for over 4,000 simplex iterations. The below shows the statistics for the configuration:
 ```
 stochastic model
 objective 1 weight = 0.1
 number of CS (epsilon) = 8
 optimization method: Lp-metric
 ```
+As seen in figure [alpha_beta], there are 8 CSs and 7 RDCs opened, which means that each node in candidate node set $J$ must be either a RDC or a CS. It is observed that all of the values in $Q_ijc$ are zeros, meaning that none of the commodities are stored in the preparedness phase. All the shippings start from the response phase.
+Figure [X_ijcs] shows the amount of commodity $c$ shipped from supplier $i$ to RDC in $j$ under scenario $s$. Here we <span style="color:red"> discover that RDC does not receive anything in both phases, so the figure only shows columns of CSs.</span> We could see that the supplier in Sari ships 117 units of food under all scenarios; 39 units of shelter under scneario 3 and 4; 0 water under scneario 1 and 117 units of water under the rest, to the CS in the same province. Averagely speaking, the 3 commdoites sent to the same CS are usually supplied by the same supplier.
+
+Figure [Y_jkcs] shows the amount of commodity $c$ shipped from RDC $j$ to AA $k$ under scenario $s$. It is calculated that commodity water and food have 636 units per shipping, while shelter ships 184.24 per shipping. It may be that Shelter costs the most for transportation compared to the other 2.
+
+Figure [I_kcs] and [b_kcs] represent the inventory and shortage amount held at AA $k$ under scenario $s$. The shortage amount 
+
+![alt text](./figures/results/alpha_beta.png)
+<!-- <img src="./figures/results/alpha_beta.png" width="300" /> -->
 
 
-Table . Supplier to CS transportation amount during response phase
-|   |             | Sari  | Tehran  |  Varamin | Islamshahr | Shahriar  | Gom  | Isfahan | Kashan
-|---|---------|---|---|---|---|---|---|---|---|---|
-| Sari        |Water   |  (0.0, 117.0, 117.0, 117.0) |   |   |   |   |   |   |   |   |
-|             |  Food |  (117.0, 117.0, 117.0, 117.0) |   |   |   |   |   |   |   |   |
-|             |  Shelter | (0.0, 0.0, 39.0, 39.0)  |   |   |   |   |   |   |   |   |
-| Qazvin      |Water   |   |  (55.6, 0.0, 0.0, 0.0) |   |   |   |   |   |   |   |
-|             |  Food |   |   |   |   |  (0.0, 117.0, 117.0, 117.0) |   |   |   |   |
-|              |  Shelter |   |   |   |  (0.0, 39.0, 39.0, 39.0) |   |   |   |   |   |
-|Tehran       |Water   |   | (55.0, 0.0, 0.0, 0.0)  |   |  |   |   |   |   |   |
-|             |  Food |   |  (132.6, 0.0, 0.0, 0.0) |   |(0.0, 132.6, 132.6, 132.6)    |   |   |   |   |   |
-|             |  Shelter |   |   |   | (0.0, 44.2, 44.2, 44.2)  |   |   |   |   |   |
-| Arak        |Water   |   |   |   | (0.0, 117.0, 117.0, 117.0)  |   |   |   |   |   |
-|              |  Food |   |  (117.0, 0.0, 0.0, 0.0) |   |(0.0, 117.0, 117.0, 117.0)   |   |   |   |   |   |
-|             |  Shelter |   |   |   |  (0.0, 39.0, 39.0, 39.0) |   |   |   |   |   |
-| Isfahan     |Water   |   |   |   |   |   |   |   |(0.0, 117.0, 117.0, 117.0)   |   |
-|             |  Food |   |   |   |   (0.0, 0.0, 117.0, 0.0) |   |   |   |  (117.0, 117.0, 0.0, 117.0)  |   |
-|             |  Shelter |   |   |   |   |   |   |   |(0.0, 0.0, 39.0, 0.0)   |   |
+![alt text](./figures/results/X_ijcs.png)
+![alt text](./figures/results/Y_jkcs.png)
+
+
+![alt text](./figures/results/b_kcs_0.png)
+![alt text](./figures/results/b_kcs_1.png)
+![alt text](./figures/results/I_kcs_0.png)
+![alt text](./figures/results/I_kcs_1.png)
 
 ### Weight Analysis
 @Nana
@@ -288,9 +288,8 @@ In terms of the modeling method, the stochastic model gives more flunctuating li
 
 
 ### Issues
-目前發現一個問題是同一個節點一定會被指定成RDC/CS 其中之一，猜測有可能跟delta設成0有關。
 
-
+A node could be a RDC, a CS or a null node that does not open any centers, however, our model only allows a node to be either a RDC or a CS. We attempt to fix the problem by adding the penalty term $\delta$, and let the model optimize for infeasibility. Unfortunately, the model still goes infeasible under conditions that the numbers of CS and RDC do not sum to the total number of candidate nodes ($|J|$).
 
 ## References
 
