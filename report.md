@@ -275,7 +275,7 @@ Table . Supplier to CS transportation amount during response phase
 ### Weight Analysis
 @Nana
 | | Lp-metric  &nbsp; &nbsp;| Weighted-sum &nbsp; &nbsp; |
-| :------------ | :-------------------------:| -------------:|
+| :------------ | :-------------------------:| :-------------:|
 Deterministic |![](./figures/dm_lp-metric.png)  |  ![](./figures/dm_weighted-sum.png)
 Stochastic |![](./figures/sp_lp-metric.png)  |  ![](./figures/sp_weighted-sum.png)
 
@@ -286,9 +286,12 @@ In terms of the modeling method, the stochastic model gives more flunctuating li
 ### Constraint on Number of CS/RDC Analysis
 Stochastic Model
 | | CS  &nbsp; &nbsp;| RDC &nbsp; &nbsp;| RDC+CS &nbsp; &nbsp; |
-| :------------ | :-------------------------:| -------------:| -------------:|
-w/o Delta |![](./figures/sp_cs_limited.png)  |  ![](./figures/sp_rdc_limited.png)  |  ![](./figures/sp_cs_rdc_limited.png) |
-Delta |![](./figures/sp_cs_limited-delta.png)  |  ![](./figures/sp_rdc_limited-delta.png)  |  ![](./figures/sp_cs_rdc_limited-delta.png) |
+| :------------ | :-------------------------:| :-------------:| :-------------:|
+w/o Delta(δ) |![](./figures/sp_cs_limited.png)  |  ![](./figures/sp_rdc_limited.png)  |  ![](./figures/sp_cs_rdc_limited.png) |
+w/ Delta(δ)|![](./figures/sp_cs_limited-delta.png)  |  ![](./figures/sp_rdc_limited-delta.png)  |  ![](./figures/sp_cs_rdc_limited-delta.png) |
+
+the deviation (δ) is indicating an increased commodity inventory penalized by the last
+term of the first objective function. It can be observed from the chart that after adding the delta term, the model can be further optimized.
 
 
 
@@ -298,8 +301,8 @@ Delta |![](./figures/sp_cs_limited-delta.png)  |  ![](./figures/sp_rdc_limited-d
 
 
 ## References
-
-- Mahjoob, M. (2018). Designing a cost-time-quality-efficient grinding process using MODM methods. arXiv preprint arXiv:1804.10710. [link](https://arxiv.org/abs/1804.10710)
+- Bozorgi-Amiri, A., Jabalameli, M.S. & Mirzapour Al-e-Hashem, S.M.J. A multi-objective robust stochastic programming model for disaster relief logistics under uncertainty. OR Spectrum 35, 905–933 (2013).[link](https://doi.org/10.1007/s00291-011-0268-x)
 - Blank, J., & Deb, K. (2020). Pymoo: Multi-objective optimization in python. IEEE Access, 8, 89497-89509. [link](https://ieeexplore.ieee.org/document/8950979)
 - Kong, Z. Y., How, B. S., Mahmoud, A., & Sunarso, J. (2022). Multi-objective Optimisation Using Fuzzy and Weighted Sum Approach for Natural Gas Dehydration with Consideration of Regional Climate. Process Integration and Optimization for Sustainability, 1-18. [link](https://doi.org/10.1007/s41616-021-00195-9)
+- Mahjoob, M. (2018). Designing a cost-time-quality-efficient grinding process using MODM methods. arXiv preprint arXiv:1804.10710. [link](https://arxiv.org/abs/1804.10710)
 - Yang, Z., Cai, X., & Fan, Z. (2014, July). Epsilon constrained method for constrained multiobjective optimization problems: some preliminary results. In Proceedings of the companion publication of the 2014 annual conference on genetic and evolutionary computation (pp. 1181-1186).
