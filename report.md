@@ -294,10 +294,10 @@ Figure [I_kcs] and [b_kcs] represent the inventory and shortage amount held at A
 
 ### Weight Analysis
 
-| | Lp-metric  &nbsp; &nbsp;| Weighted-sum &nbsp; &nbsp; |
-| :------------ | :-------------------------:| :-------------:|
-Deterministic |![](./figures/dm_lp-metric.png)  |  ![](./figures/dm_weighted-sum.png)
-Stochastic |![](./figures/sp_lp-metric.png)  |  ![](./figures/sp_weighted-sum.png)
+|               |    Lp-metric  &nbsp; &nbsp;     |     Weighted-sum &nbsp; &nbsp;     |
+|:--------------|:-------------------------------:|:----------------------------------:|
+| Deterministic | ![](./figures/dm_lp-metric.png) | ![](./figures/dm_weighted-sum.png) |
+| Stochastic    | ![](./figures/sp_lp-metric.png) | ![](./figures/sp_weighted-sum.png) |
 
 With single-objective optimization, we can minimize the total costs to $11,950$ ( $10^6\$$ ) and the maximum shortage costs to $1,364$ ( $10^6\$$ ) for stochastic model with Lp-metric. The combined objective of weighted-sum and Lp-metrics are then chosen to use to coordinate the 2 objectives.
 In terms of the modeling method, the stochastic model gives more fluctuating line than the deterministic one. In terms of the optimization method, the weighted sum gives a very stable tendency; as $w$ increases, objective 1 is placed more weight and therefore the weighted objective grows rapidly. Due to the different numeric scales for both objectives; objective 1 accumulates all costs so it falls around $10^4$, while objective 2 is around $10^3$ (5 times smaller). Therefore, the Lp-metric, which aims to minimize the digression between the objective and its ideal solution, is more suitable for this problem. The overall tendency of the 2 optimization methods are the opposite: as $w$ increases, weighted-sum objective grows, while Lp-metric objective decreases.
@@ -307,15 +307,16 @@ As for the single-objectives, it's clear that objective 1 and 2 have a trade-off
 
 ### Constraint on Number of CS/RDC Analysis
 Stochastic Model
-| | CS  &nbsp; &nbsp;| RDC &nbsp; &nbsp;| RDC+CS &nbsp; &nbsp; |
-| :------------ | :-------------------------:| :-------------:| :-------------:|
-w/o Delta(δ) |![](./figures/sp_cs_limited.png)  |  ![](./figures/sp_rdc_limited.png)  |  ![](./figures/sp_cs_rdc_limited.png) |
-w/ Delta(δ)|![](./figures/sp_cs_limited-delta.png)  |  ![](./figures/sp_rdc_limited-delta.png)  |  ![](./figures/sp_cs_rdc_limited-delta.png) |
+
+|                       |           CS  &nbsp; &nbsp;            |            RDC &nbsp; &nbsp;            |            RDC+CS &nbsp; &nbsp;            |
+|:----------------------|:--------------------------------------:|:---------------------------------------:|:------------------------------------------:|
+| w/o Delta( $\delta$ ) |    ![](./figures/sp_cs_limited.png)    |    ![](./figures/sp_rdc_limited.png)    |    ![](./figures/sp_cs_rdc_limited.png)    |
+| w/ Delta( $\delta$ )  | ![](./figures/sp_cs_limited-delta.png) | ![](./figures/sp_rdc_limited-delta.png) | ![](./figures/sp_cs_rdc_limited-delta.png) |
 
 The deviation ( $\delta$ ) indicates an increased commodity inventory penalized by the last
 term of the first objective function. It can be observed that after adding the penalty term, the model can be further optimized.
-
-
+In addition, by appropriately limiting the number of CS and RDC builds, it is very helpful to minimize the cost.
+Experimental results show that setting the maximum number of CSs to 8 and the maximum number of RDCs to 9 brings the best results. Limiting the number of RDCs to less than 12 works the best if there is a delta term.
 
 ## Issues
 
@@ -326,7 +327,7 @@ A node could be a RDC, a CS or a null node that does not open any centers, howev
 Our lp-metric with w tendency is the same as Amiri's paper fig 7.
 
 ## References
-- Bozorgi-Amiri, A., Jabalameli, M.S. & Mirzapour Al-e-Hashem, S.M.J. A multi-objective robust stochastic programming model for disaster relief logistics under uncertainty. OR Spectrum 35, 905–933 (2013).[link](https://doi.org/10.1007/s00291-011-0268-x)
+- Bozorgi-Amiri, A., Jabalameli, M.S. & Mirzapour Al-e-Hashem, S.M.J. (2013). A multi-objective robust stochastic programming model for disaster relief logistics under uncertainty. OR Spectrum 35, 905–933. [link](https://doi.org/10.1007/s00291-011-0268-x)
 - Blank, J., & Deb, K. (2020). Pymoo: Multi-objective optimization in python. IEEE Access, 8, 89497-89509. [link](https://ieeexplore.ieee.org/document/8950979)
 - Kong, Z. Y., How, B. S., Mahmoud, A., & Sunarso, J. (2022). Multi-objective Optimisation Using Fuzzy and Weighted Sum Approach for Natural Gas Dehydration with Consideration of Regional Climate. Process Integration and Optimization for Sustainability, 1-18. [link](https://doi.org/10.1007/s41616-021-00195-9)
 - Mahjoob, M. (2018). Designing a cost-time-quality-efficient grinding process using MODM methods. arXiv preprint arXiv:1804.10710. [link](https://arxiv.org/abs/1804.10710)
