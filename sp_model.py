@@ -282,7 +282,8 @@ def draw(optimize_method: str):
     if optimize_method == 'weighted-sum':
         solvers = [solve(w, OptimizationMethod.WEIGHTED_SUM) for w in weights]
         # weighted Objs
-        wObjs = [weights[i] * solvers[i][1] + (1 - weights[i]) * solvers[i][2] for i in to_range(weights)]
+        wObjs = [weights[i] * solvers[i][1].getValue()
+        + (1 - weights[i]) * solvers[i][2].getValue() for i in to_range(weights)]
 
     elif optimize_method == 'lp-metric':
         m, obj1, obj2 = solve(1, OptimizationMethod.WEIGHTED_SUM)
@@ -294,13 +295,13 @@ def draw(optimize_method: str):
         solvers = [solve(w, OptimizationMethod.LP_METRIC,
                          objstars) for w in weights]
         # note that in lp-metrics, we need (Obj - Obj*) / Obj* instead of native Obj
-        Obj1_s = [(s[1] - obj1_star) / obj1_star for s in solvers]
-        Obj2_s = [(s[2] - obj2_star) / obj2_star for s in solvers]
+        Obj1_s = [(s[1].getValue() - obj1_star) / obj1_star for s in solvers]
+        Obj2_s = [(s[2].getValue() - obj2_star) / obj2_star for s in solvers]
         # lp-metric Objs
         wObjs = [weights[i] * Obj1_s[i] + (1 - weights[i]) * Obj2_s[i] for i in to_range(weights)]
 
-    Obj1s = [s[1] for s in solvers]
-    Obj2s = [s[2] for s in solvers]
+    Obj1s = [s[1].getValue() for s in solvers]
+    Obj2s = [s[2].getValue() for s in solvers]
     # 1/2 subplots, double y-axis
     fig, ax1 = plt.subplots()
     # drawing the obj1, obj2 in ax1 (greater numeric scale)
@@ -346,10 +347,10 @@ def draw(optimize_method: str):
 
 
 # %%
-# draw('lp-metric')
+draw('lp-metric')
 
-# %%
-# draw('weighted-sum')
+#%%
+draw('weighted-sum')
 # %%
 # wieght = 0.1
 # best_cs_n = -1

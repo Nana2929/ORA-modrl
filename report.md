@@ -14,7 +14,20 @@ Team B
 ## Table of Contents
 1. [Introduction](#Introduction)
     1.1 [Background: Disaster Relief Logistics](#Background:-Disaster-Relief-Logistics)
-    1.2 [Motivation](#Motivation)
+    1.2 [Abbreviation](#Abbreviation)
+    1.3 [Motivation](#Motivation)
+    1.4 [Problem Definition](#Problem-Definition)
+2. [Methodology](#Methodology)
+    2.1 [Formulation](#Formulation)
+    2.2 [Multi-Objective Optimization](#Multi-Objective-Optimization)
+3. [Case Study](#CaseStudy)
+    3.1 [Data Collection](#DataCollection)
+    3.2 [Implementation Details](#Implementation-Details)
+    3.3 [Result Analysis](#Result-Analysis)
+    3.4 [Weight Analysis](#weight-analysis)
+    3.5 [Constraint on Number of CS/RDC Analysis](#Constraint-on-Number-of-CS/RDC-Analysis)
+4. [Issues](#issues)
+5. [References](#References)
 
 
 ## Introduction
@@ -187,7 +200,7 @@ $$\min w * \frac{Obj_1 - Obj_1^*}{Obj_1^*} + (1 - w) * \frac{Obj_2 - Obj_2^*}{Ob
 
 
 
-## Data Collection and Analysis Result
+## Case Study
 
 ### Data Collection
 We use the data in case study from Amiri's paper. The scene is set at a well-populated region of Iran located near sourthern Central Alborz, with several active faults surrounding (hence the disaster is imagined to be an earthquake).
@@ -210,11 +223,11 @@ Note that $I$ is a subset of $J$, and $J = K$ in terms of the distance statistic
 
 <figure>
   <img
-  src="./figures/data/supplier_capacity.png">
+  src="./figures/data/supplier_capacity.png" width="200">
   <figcaption>Figure 2. Supplier and their capacity with respect to commodity type</figcaption>
 </figure>
   <img
-  src="./figures/data/rho_remains_usable.png">
+  src="./figures/data/rho_remains_usable.png" width="300">
 
   Figure 5. $\rho_{jcs}$ and $\rho_{ics}$; the fraction of stocked materials that remain usable (unit: %).
 
@@ -227,23 +240,25 @@ Note that $I$ is a subset of $J$, and $J = K$ in terms of the distance statistic
 
 <figure>
   <img
-  src="./figures/data/demand_under_scenario.png">
+  src="./figures/data/demand_under_scenario.png"
+  width="300">
   <figcaption>Figure 4. Demands of each AA under different scenarios.</figcaption>
 </figure>
-
-
-## Result Analysis
-
-### Modeling
-We start simple with a **deterministic model** first. It assumes that in the response phase, we have perfect knowledge of which scenario would happen, so the *demand, transportation cost, and the fraction of stocked materials that remain usable* are pre-determined. In the following experiments, we choose to use the scenario $s1$. We do not extensively discuss on this model but record its statistics for reference.
-Our final model is the **stochastic model**, which has the same setting as the deterministic one in preparedness phase; in response phase, it considers 4 scenarios representing earthquakes of different epicenters and potential earthquake intensity.
-
 
 ### Implementation Details
 We decide to solve the problem using Gurobi Optimization solver with the academic license. The environment is Gurobi 10.0.0 with Python 3.7.12 under the *Linux x86_64 system with 12th Gen Intel(R) Core(TM) i7-12700*.
 In Gurobi implementation, we use the `setObjectiveN()`  that defaults to weighted-sum method according to the official documentation ([gurobi doc 9.1: Working with Multiple Objective](https://www.gurobi.com/documentation/9.1/refman/working_with_multiple_obje.html)) for both weighted-sum and Lp-metric strategies.
 
-### Solution
+### Result Analysis
+
+#### Modeling
+We start simple with a **deterministic model** first. It assumes that in the response phase, we have perfect knowledge of which scenario would happen, so the *demand, transportation cost, and the fraction of stocked materials that remain usable* are pre-determined. In the following experiments, we choose to use the scenario $s1$. We do not extensively discuss on this model but record its statistics for reference.
+Our final model is the **stochastic model**, which has the same setting as the deterministic one in preparedness phase; in response phase, it considers 4 scenarios representing earthquakes of different epicenters and potential earthquake intensity.
+
+
+
+
+#### Solution
 
 The final stochastic programming model has 4,422 continuous variables and 210 binary variables; 666 quadratic constraints and 12 general constraints. The optimization procedure takes 0.81 seconds for over 4,000 simplex iterations. The below shows the statistics for the configuration:
 ```
@@ -253,35 +268,35 @@ number of CS (epsilon) = 8
 optimization method: Lp-metric
 ```
 As seen in figure [alpha_beta], there are 8 CSs and 7 RDCs opened, which means that each node in candidate node set $J$ must be either a RDC or a CS. It is observed that all of the values in $Q_ijc$ are zeros, meaning that none of the commodities are stored in the preparedness phase. All the shippings start from the response phase.
+![alt text](./figures/results/alpha_beta.png)
 Figure [X_ijcs] shows the amount of commodity $c$ shipped from supplier $i$ to RDC in $j$ under scenario $s$. Here we <span style="color:red"> discover that RDC does not receive anything in both phases, so the figure only shows columns of CSs.</span> We could see that the supplier in Sari ships 117 units of food under all scenarios; 39 units of shelter under scneario 3 and 4; 0 water under scneario 1 and 117 units of water under the rest, to the CS in the same province. Averagely speaking, the 3 commdoites sent to the same CS are usually supplied by the same supplier.
-
+![alt text](./figures/results/X_ijcs.png)
 Figure [Y_jkcs] shows the amount of commodity $c$ shipped from RDC $j$ to AA $k$ under scenario $s$. It is calculated that commodity water and food have 636 units per shipping, while shelter ships 184.24 per shipping. It may be that Shelter costs the most for transportation compared to the other 2.
 
-Figure [I_kcs] and [b_kcs] represent the inventory and shortage amount held at AA $k$ under scenario $s$. The shortage amount 
 
-![alt text](./figures/results/alpha_beta.png)
 <!-- <img src="./figures/results/alpha_beta.png" width="300" /> -->
 
-
-![alt text](./figures/results/X_ijcs.png)
 ![alt text](./figures/results/Y_jkcs.png)
 
+Figure [I_kcs] and [b_kcs] represent the inventory and shortage amount held at AA $k$ under scenario $s$. The inventory balance equation constraint regulates that $I_{kcs} - b_{kcs}$ should equal to the total amount of commdoities sent in minus those in store; holding inventory and having shortage all have a penalty cost exerted on objective 1. We could observed that due to high transportation cost on shelters, the shortage of shelter is prevalent for all AAs and no AAs hold shelter inventory.
 
-![alt text](./figures/results/b_kcs_0.png)
-![alt text](./figures/results/b_kcs_1.png)
 ![alt text](./figures/results/I_kcs_0.png)
 ![alt text](./figures/results/I_kcs_1.png)
+![alt text](./figures/results/b_kcs_0.png)
+![alt text](./figures/results/b_kcs_1.png)
 
 ### Weight Analysis
-@Nana
+
 | | Lp-metric  &nbsp; &nbsp;| Weighted-sum &nbsp; &nbsp; |
 | :------------ | :-------------------------:| :-------------:|
 Deterministic |![](./figures/dm_lp-metric.png)  |  ![](./figures/dm_weighted-sum.png)
 Stochastic |![](./figures/sp_lp-metric.png)  |  ![](./figures/sp_weighted-sum.png)
 
-Before analysis, it should be first noted that the numeric scales for both objectives are different; Objective 1 accumulates all costs so it is at around $10^4$, while Objective 2 is around $10^3$ (5 times smaller). Therefore, the Lp-metric which aims to minimize the digression between the objectives and their ideal solution is more suitable for this problem.
+With single-objective optimization, we can minimize the total costs to $11,950$ ($10^6\$$) and the maximum shortage costs to $1,364$ ($10^6\$$) for stochastic model with Lp-metric. The combined objective of weighted-sum and Lp-metrics are then chosen to use to coordinate the 2 objectives.
+In terms of the modeling method, the stochastic model gives more fluctuating line than the deterministic one. In terms of the optimization method, the weighted sum gives a very stable tendency; as $w$ increases, objective 1 is placed more weight and therefore the weighted objective grows rapidly. Due to the different numeric scales for both objectives; objective 1 accumulates all costs so it falls around $10^4$, while objective 2 is around $10^3$ (5 times smaller). Therefore, the Lp-metric, which aims to minimize the digression between the objective and its ideal solution, is more suitable for this problem. The overall tendency of the 2 optimization methods are the opposite: as $w$ increases, weighted-sum objective grows, while Lp-metric objective decreases.
+As for the single-objectives, it's clear that objective 1 and 2 have a trade-off in=between. A higher total cost leads to higher satisfaction (less shortage in AAs), vice versa.
 
-In terms of the modeling method, the stochastic model gives more flunctuating line than the deterministic one. With single-objective optimization, we can minimize the total costs to $11,950$ ($10^6\$$) and the maximum shortage costs to $1364$ ($10^6\$$).
+
 
 ### Constraint on Number of CS/RDC Analysis
 Stochastic Model
@@ -290,14 +305,18 @@ Stochastic Model
 w/o Delta(δ) |![](./figures/sp_cs_limited.png)  |  ![](./figures/sp_rdc_limited.png)  |  ![](./figures/sp_cs_rdc_limited.png) |
 w/ Delta(δ)|![](./figures/sp_cs_limited-delta.png)  |  ![](./figures/sp_rdc_limited-delta.png)  |  ![](./figures/sp_cs_rdc_limited-delta.png) |
 
-the deviation (δ) is indicating an increased commodity inventory penalized by the last
-term of the first objective function. It can be observed from the chart that after adding the delta term, the model can be further optimized.
+The deviation ($\delta$) indicates an increased commodity inventory penalized by the last
+term of the first objective function. It can be observed that after adding the penalty term, the model can be further optimized.
 
 
 
-### Issues
+## Issues
 
 A node could be a RDC, a CS or a null node that does not open any centers, however, our model only allows a node to be either a RDC or a CS. We attempt to fix the problem by adding the penalty term $\delta$, and let the model optimize for infeasibility. Unfortunately, the model still goes infeasible under conditions that the numbers of CS and RDC do not sum to the total number of candidate nodes ($|J|$).
+
+## Conclusion
+
+Our lp-metric with w tendency is the same as Amiri's paper fig 7.
 
 ## References
 - Bozorgi-Amiri, A., Jabalameli, M.S. & Mirzapour Al-e-Hashem, S.M.J. A multi-objective robust stochastic programming model for disaster relief logistics under uncertainty. OR Spectrum 35, 905–933 (2013).[link](https://doi.org/10.1007/s00291-011-0268-x)
