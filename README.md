@@ -13,23 +13,23 @@ Team B
 
 ## Table of Contents
 
-<!-- 1. [Introduction](#Introduction)
-    1.1 [Background: Disaster Relief Logistics](#Background:-Disaster-Relief-Logistics)
-    1.2 [Abbreviation](#Abbreviation)
-    1.3 [Motivation](#Motivation)
+1. [Introduction](#Introduction)  
+    1.1 [Background: Disaster Relief Logistics](#Background:-Disaster-Relief-Logistics)  
+    1.2 [Abbreviation](#Abbreviations)  
+    1.3 [Motivation](#Motivation)  
     1.4 [Problem Definition](#Problem-Definition)
-2. [Methodology](#Methodology)
-    2.1 [Formulation](#Formulation)
+2. [Methodology](#Methodology)  
+    2.1 [Formulation](#Formulation)  
     2.2 [Multi-Objective Optimization](#Multi-Objective-Optimization)
-3. [Case Study](#CaseStudy)
-    3.1 [Data Collection](#DataCollection)
-    3.2 [Implementation Details](#Implementation-Details)
-    3.3 [Result Analysis](#Result-Analysis)
-    3.4 [Weight Analysis](#weight-analysis)
+3. [Case Study](#Case-Study)  
+    3.1 [Data Collection](#Data-Collection)  
+    3.2 [Implementation Details](#Implementation-Details)  
+    3.3 [Result Analysis](#Result-Analysis)  
+    3.4 [Weight Analysis](#weight-analysis)  
     3.5 [Constraint on Number of CS/RDC Analysis](#Constraint-on-Number-of-CS/RDC-Analysis)
-4. [Issues](#issues)
-5. [References](#References) -->
-
+4. [Issues](#Issues)
+5. [Conclusion](#Conclusion)
+6. [References](#References)
 
 ## Introduction
 ### Background: Disaster Relief Logistics
