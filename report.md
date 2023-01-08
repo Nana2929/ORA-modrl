@@ -34,7 +34,7 @@ Team B
 ## Introduction
 ### Background: Disaster Relief Logistics
 
-Our project is inspired by "A multi-objective robust stochastic programming model for disaster relief logistics under uncertainty" by Ali bozorgi-Amiri et al, published on *OR Spectrum* in year 2011. Their model is a multi-objective model that aims to minimizes the total cost and its variance (as the first objective), and maximizes the satisfaction level of the least satisfied affected area (as the second objective). Since the disaster scale is stochastic, their model proposes to use discrete scenario analysis to include the stochastic factors.
+Our project is inspired by "A multi-objective robust stochastic programming model for disaster relief logistics under uncertainty" by Ali Bozorgi-Amiri et al, published on *OR Spectrum* in year 2011. Their model is a multi-objective model that aims to minimizes the total cost and its variance (as the first objective), and maximizes the satisfaction level of the least satisfied affected area (as the second objective). Since the disaster scale is stochastic, their model proposes to use discrete scenario analysis to include the stochastic factors.
 
 
 
@@ -48,14 +48,14 @@ AA: Affected Area
 
 
 ### Motivation
-As Covid-19 threats gradually becomes a normality, it is a must to consider how to respond to a disaster under the pandemic. An imaginary scenario is that an earthquake damages a hospital that quarantines many Covid-19 confirmed cases, and now the resources need to be sent to this hospital without further human contacts. In this case, some contactless stations (CSs) need to be set up in place of the Amiri's proposed RDCs.
+As Covid-19 threats gradually becomes a normality, it is a must to consider how to respond to a disaster under the pandemic. An imaginary scenario is that an earthquake damages a hospital that quarantines many Covid-19 confirmed cases, and now the resources need to be sent to this hospital without further human contacts. In this case, some contactless stations (CSs) need to be set up in place of the Bozorgi-Amiri's proposed RDCs.
 CSs send resources via self-driving cars, therefore avoid the risk brought by frequent human mobility in between. They also reduce the transportation costs because no drivers are needed. We imagine that CSs should have higher setup cost and better capacity than RDCs.
 Figure 1 and 2 compares the original paper setting versus our proposed setting.
 
 <figure>
   <img
   src="./figures/schemas/amiri_general_schema_of_rd_chain.png" width="300">
-  <figcaption>Figure 1. General resource distribution chain schema of Amiri's paper </figcaption>
+  <figcaption>Figure 1. The general resource distribution chain schema of paper of Bozorgi-Amiri </figcaption>
 
 <figure>
   <img
@@ -65,11 +65,11 @@ Figure 1 and 2 compares the original paper setting versus our proposed setting.
 
 
 ### Problem Definition
-Amiri's paper models disaster planning and response capturing the inherent uncertainty in demand, supply, and cost resulting from the disaster. The model consists of 3 stages and 2 kinds of pair-wise transportation (Supplier-RDC, RDC-AA). Given constraints on transportation and the capacity limits in the 3 sets of nodes, the goal is to select optimum number of commodities in delivery from node to node, locations to set up RDCs, and capacitiy levels if an RDC is to be set up, while minimizing the total cost and the least satisified area's shortage cost. Amiri's paper goes further to wrap the objective functions with a robust optimization framework to guarantee small variance and model feasibility; we would like to skip the part as it makes the model too complicated.
-In brief, we would like to mainly follow Amiri's paper formulation and multi-objective (bi-objective) setting, but with the following modifications:
+Amiri's paper models disaster planning and response capturing the inherent uncertainty in demand, supply, and cost resulting from the disaster. The model consists of 3 stages and 2 kinds of pair-wise transportation (Supplier-RDC, RDC-AA). Given constraints on transportation and the capacity limits in the 3 sets of nodes, the goal is to select optimum number of commodities in delivery from node to node, locations to set up RDCs, and capacitiy levels if an RDC is to be set up, while minimizing the total cost and the least satisified area's shortage cost. Bozorgi-Amiri's paper goes further to wrap the objective functions with a robust optimization framework to guarantee small variance and model feasibility; we would like to skip the part as it makes the model too complicated.
+In brief, we would like to mainly follow Bozorgi-Amiri's paper formulation and multi-objective (bi-objective) setting, but with the following modifications:
 1. Separating RDCs into standard RDCs (denoted RDC) and CSs (denoted CS).
 2. Separating affected areas into high-risk and low-risk AAs, where high-risk AAs only receive resources from CSs, and low-risk AAs could receive from both.
-3. Simplifying the constraints by removing the procure costs of commodities, and fixing the setup cost and capacity size for RDC (Amiri's paper has 3 setup costs with 3 sizes), and handcrafting a setup cost and a capacity size for CS.
+3. Simplifying the constraints by removing the procure costs of commodities, and fixing the setup cost and capacity size for RDC (Bozorgi-Amiri's paper has 3 setup costs with 3 sizes), and handcrafting a setup cost and a capacity size for CS.
 4. Simplifying the objectives by removing the robust optimization framework described in the paper section 3 formula (13), and keeping only the naive $\xi$ for both objectives.
 
 ## Methodology
@@ -135,7 +135,7 @@ In brief, we would like to mainly follow Amiri's paper formulation and multi-obj
 
 
 - Constraints
-    The green parts are highlighted to indicate the revised parts from Amiri's paper.
+    The green parts are highlighted to indicate the revised parts from Bozorgi-Amiri's paper.
 
     (1) **Control Balance Equation**: The amount of commodities sent from suppliers and other RDC/CS $j'$ to $j$ $-$ the amount $j$ sending out to other AA roughly equals to the amount of commodities transferred to AAs from the RDC $j$. If LHS is greater than the RHS, this inventory surplus is penalized by the first objective.
     <!-- (24) -->
@@ -188,7 +188,7 @@ In brief, we would like to mainly follow Amiri's paper formulation and multi-obj
     Sometimes the input parameters make the model infeasible, so we add a penalty term $\delta$ to penalize the solutions that fail to meet the demand in a scenario or violate certain constraints, while keeping the model feasible. The final objective 1 is:
     $SC + TC_{pre} + TC_{post}+ IC + SHC + \gamma\Sigma_{j \in J}\Sigma_{c \in C}\Sigma_{s \in S}\delta_{jcs}$, where $\gamma$ is the penalty weight of the deviation term.
     - Objective 2: maximize the total satisfaction; i.e., minimize the shortage costs of the least satisfied AA under all scenarios.
-    $\Sigma_{s \in S}p_s(\Sigma_{c \in C}\max_{k \in K}{b_{cks}})$
+    $\Sigma_{s \in S}p_s(\Sigma_{c \in C}\max_{k \in K}{b_{kcs}})$
 
 
 
@@ -198,13 +198,13 @@ In brief, we would like to mainly follow Amiri's paper formulation and multi-obj
 
 #### Weighted-Sum Method
 Both objectives are assigned a positive weight ($w$ for $Obj_1$, $0 \leq w \leq 1$) and the goal is to minimize the weighted sum of both objective functions. An issue is that $Obj_1$ involves $Obj_2$, so it must be numerically greater than the latter, therefore assigning a small enough $w$ is important to avoid the dominance of the total cost over AA satisfaction.
-$$\min w * Obj_1 + (1 - w) * Obj_2$$
+$$\min wObj_1 + (1 - w)Obj_2$$
 
 
 #### Lp-Metric Method
 The Lp-metric method aims to reduce the digression btween objective functions and their ideal solution obtained by indiviually optimizing them. In order to obtain the ${Obj^*}$, we need to solve the problem with only one objective at a time (optimize twice) and then plug in the ${Obj^*}$ values, so there's 3 times of optimization in total.
 
-$$\min w * \frac{Obj_1 - {Obj_1}^* }{{Obj_1}^* } + (1 - w) * \frac{Obj_2 - {Obj_2}^* }{{Obj_2}^* }$$
+$$\min w \frac{Obj_1 - {Obj_1}^* }{{Obj_1}^* } + (1 - w)\frac{Obj_2 - {Obj_2}^* }{{Obj_2}^* }$$
 
 
 
@@ -212,7 +212,7 @@ $$\min w * \frac{Obj_1 - {Obj_1}^* }{{Obj_1}^* } + (1 - w) * \frac{Obj_2 - {Obj_
 ## Case Study
 
 ### Data Collection
-We use the data in case study from Amiri's paper. The scene is set at a well-populated region of Iran located near sourthern Central Alborz, with several active faults surrounding (hence the disaster is imagined to be an earthquake).
+We use the data in case study from Bozorgi-Amiri's paper. The scene is set at a well-populated region of Iran located near sourthern Central Alborz, with several active faults surrounding (hence the disaster is imagined to be an earthquake).
 1. $I$ contains 5 suppliers, including Sari, Qazvin, Tehran, Arak and Isfahan.
 2. $J$ contains 15 candidate nodes, including Gorgan, Semnan, Sari, Rasht, Qazvin, Karaj, Tehran, Varamin, Roibatkarim, Islamshahr, Shahriar, Gom, Arak, Isfahan and Kashan. Their pair-wise distance statistics are shown in figure 3. The setup costs of an RDC ( $F^R$ ) and a CS ( $F^C$ ) are shown in figure 3.
 3. $K$ contains 15 demand points (AAs). The first 8 nodes are low-risk AAs while the later 7 are high-risk ones (the former is denoted $K/K'$ while the latter is denoted $K'$). Their demands under all scenarios ( $D_{kcs}$ ) are shown in figure 4. The capacity of AA is an arbitrary value set to 16 (same unit as the capacity of an RDC and CS).
@@ -226,32 +226,31 @@ Note that $I$ is a subset of $J$, and $J = K$ in terms of the distance statistic
   <img
   src="./figures/data/distance.png"
   alt="distance matrix">
-  <figcaption>Figure 1. Distance matrix</figcaption>
+  <figcaption>Table 1. Distance matrix</figcaption>
 </figure>
 
 
 <figure>
   <img
   src="./figures/data/supplier_capacity.png" width="300">
-  <figcaption>Figure 2. Supplier and their capacity with respect to commodity type</figcaption>
+  <figcaption>Table 2. Supplier and their capacity with respect to commodity type</figcaption>
 </figure>
   <img
   src="./figures/data/rho_remains_usable.png" width="500">
-
-  Figure 5. $\rho_{jcs}$ and $\rho_{ics}$; the fraction of stocked materials that remain usable (unit: %).
+Table 3. $\rho_{jcs}$ and $\rho_{ics}$; the fraction of stocked materials that remain usable (unit: %).
 
 
 <figure>
   <img width=200
   src="./figures/data/setup_cost.png">
-  <figcaption>Figure 3. Setup cost for RDC and CS</figcaption>
+  <figcaption>Table 4. Setup cost for RDC and CS</figcaption>
 </figure>
 
 <figure>
   <img
   src="./figures/data/demand_under_scenario.png"
   width="500">
-  <figcaption>Figure 4. Demands of each AA under different scenarios.</figcaption>
+  <figcaption>Table 5. Demands of each AA under different scenarios.</figcaption>
 </figure>
 
 ### Implementation Details
@@ -266,7 +265,6 @@ Our final model is the **stochastic model**, which has the same setting as the d
 
 
 
-
 #### Solution
 
 The final stochastic programming model has 4,422 continuous variables and 210 binary variables; 666 quadratic constraints and 12 general constraints. The optimization procedure takes 0.81 seconds for over 4,000 simplex iterations. The below shows the statistics for the configuration:
@@ -276,23 +274,54 @@ objective 1 weight = 0.1
 number of CS (epsilon) = 8
 optimization method: Lp-metric
 ```
-As seen in figure [alpha_beta], there are 8 CSs and 7 RDCs opened, which means that each node in candidate node set $J$ must be either a RDC or a CS. It is observed that all of the values in $Q_ijc$ are zeros, meaning that none of the commodities are stored in the preparedness phase. All the shippings start from the response phase.
-![alt text](./figures/results/alpha_beta.png)
-Figure [X_ijcs] shows the amount of commodity $c$ shipped from supplier $i$ to RDC in $j$ under scenario $s$. Here we <span style="color:red"> discover that RDC does not receive anything in both phases, so the figure only shows columns of CSs.</span> We could see that the supplier in Sari ships 117 units of food under all scenarios; 39 units of shelter under scneario 3 and 4; 0 water under scneario 1 and 117 units of water under the rest, to the CS in the same province. Averagely speaking, the 3 commdoites sent to the same CS are usually supplied by the same supplier.
-![alt text](./figures/results/X_ijcs.png)
-Figure [Y_jkcs] shows the amount of commodity $c$ shipped from RDC $j$ to AA $k$ under scenario $s$. It is calculated that commodity water and food have 636 units per shipping, while shelter ships 184.24 per shipping. It may be that Shelter costs the most for transportation compared to the other 2.
+As seen in table 1, there are 8 CSs and 7 RDCs opened, which means that each node in candidate node set $J$ must be either a RDC or a CS. It is observed that all of the values in $Q_{ijc}$ are zeros, meaning that none of the commodities are stored in the preparedness phase. All the shippings start from the response phase.
+
+<figure>
+  <img
+  src="./figures/results/alpha_beta.png"
+  width="500">
+  <figcaption>Table 6. RDC and CS facility locations </figcaption>
+</figure>
+
+Figure 6 shows . Here we discover that RDC does not receive anything in both phases, so the figure only shows columns of CSs. We could see that the supplier in Sari ships 117 units of food under all scenarios; 39 units of shelter under scneario 3 and 4; 0 water under scneario 1 and 117 units of water under the rest, to the CS in the same province. Averagely speaking, the 3 commdoites sent to the same CS are usually supplied by the same supplier.
 
 
-<!-- <img src="./figures/results/alpha_beta.png" width="300" /> -->
+<figure>
+  <img
+  src="./figures/results/X_ijcs.png"
+  width="500">
+  <figcaption>Table 7. The amount of commodity c shipped from supplier i to RDC in j under scenario s</figcaption>
+</figure>
 
 ![alt text](./figures/results/Y_jkcs.png)
+<figure>
+  <img
+  src="./figures/results/Y_jkcs.png"
+  width="500">
+  <figcaption>Table 8. The amount of commodity c shipped from RDC/CS j to AA k under scenario s</figcaption>
+</figure>
 
-Figure [I_kcs] and [b_kcs] represent the inventory and shortage amount held at AA $k$ under scenario $s$. The inventory balance equation constraint regulates that $I_{kcs} - b_{kcs}$ should equal to the total amount of commdoities sent in minus those in store; holding inventory and having shortage all have a penalty cost exerted on objective 1. We could observed that due to high transportation cost on shelters, the shortage of shelter is prevalent for all AAs and no AAs hold shelter inventory.
+Figure 7 shows the amount of commodity $c$ shipped from RDC $j$ to AA $k$ under scenario $s$. It is calculated that commodity water and food have 636 units per shipping, while shelter ships 184.24 per shipping. It may be that shelter costs the most for transportation compared to the other 2. Figure 7 and 8 both show that nodes close in distance do interact much more (eg. Supplier Arak supplies Tehran's RDC with food because they are only 10.3 km away from each other; supplier in Sari supplies ts own CS with 3 commodities since they are 0 km away from each other in terms of the distance statistics). Figure 8 shows The amount of commodity $c$ shipped from RDC/CS $j$ to AA $k$ under scenario $s$; Tehran's AA receives the most commdoities; the commdities all come from the closest (within 100 km) RDCs/CSs, including Islamshahr, Shahriar, Sari, etc.
 
-![alt text](./figures/results/I_kcs_0.png)
-![alt text](./figures/results/I_kcs_1.png)
-![alt text](./figures/results/b_kcs_0.png)
-![alt text](./figures/results/b_kcs_1.png)
+
+Figure 9 and 10 represent the inventory and shortage amount held at AA $k$ under scenario $s$. The inventory balance equation constraint regulates that $I_{kcs} - b_{kcs}$ should equal to the total amount of commdoities sent in minus those in store; holding inventory and having shortage all have a penalty cost exerted on objective 1. We could observed that due to high transportation cost on shelters, the shortage of shelter is prevalent for all AAs and no AAs hold shelter inventory.
+<figure>
+  <img
+  src="./figures/results/I_kcs_0.png"
+  width="500">
+    <img
+  src="./figures/results/I_kcs_1.png"
+  width="500">
+  <figcaption>Table 9. The amount of inventory of commodity c at AA k under scenario s</figcaption>
+</figure>
+
+<figure>
+  <img
+  src="./figures/results/b_kcs_0.png" >
+    <img
+  src="./figures/results/b_kcs_1.png">
+  <figcaption>Table 10. The amount of shortage of commodity c at AA k under scenario s</figcaption>
+</figure>
 
 ### Weight Analysis
 
@@ -303,7 +332,16 @@ Figure [I_kcs] and [b_kcs] represent the inventory and shortage amount held at A
 
 With single-objective optimization, we can minimize the total costs to $11,950$ ( $10^6\$$ ) and the maximum shortage costs to $1,364$ ( $10^6\$$ ) for stochastic model with Lp-metric. The combined objective of weighted-sum and Lp-metrics are then chosen to use to coordinate the 2 objectives.
 In terms of the modeling method, the stochastic model gives more fluctuating line than the deterministic one. In terms of the optimization method, the weighted sum gives a very stable tendency; as $w$ increases, objective 1 is placed more weight and therefore the weighted objective grows rapidly. Due to the different numeric scales for both objectives; objective 1 accumulates all costs so it falls around $10^4$, while objective 2 is around $10^3$ (5 times smaller). Therefore, the Lp-metric, which aims to minimize the digression between the objective and its ideal solution, is more suitable for this problem. The overall tendency of the 2 optimization methods are the opposite: as $w$ increases, weighted-sum objective grows, while Lp-metric objective decreases.
-As for the single-objectives, it's clear that objective 1 and 2 have a trade-off in=between. A higher total cost leads to higher satisfaction (less shortage in AAs), vice versa.
+As for the single-objectives, it's clear that objective 1 and 2 have a trade-off in=between. A higher total cost leads to higher satisfaction (less shortage in AAs), and vice versa.
+<figure>
+  <img
+  src="./figures/sp-delta-weight-analysis.png"
+  width="500">
+  <figcaption>Table 11. Stochastic lp-metrics and weighted-sum objective statistics</figcaption>
+</figure>
+
+**[In response to Professor's question]**
+We notice that there's a small peak between $w = 0.4 $ and $0.5$ in the stochastic and Lp-metric setting. By table 11, we know that it is because there's a sudden surge in objective 2 from around $1,864$ to $2,002$ for this $0.1$ weight step (for previous step of $0.1$-unit increase, objective 2 roughly increases $100$ only), and therefore the objective 2's digression becomes so great that the lp-metric combined objective is raised up temporarily, resulting in the small peak.
 
 
 
@@ -322,7 +360,7 @@ Experimental results show that setting the maximum number of CSs to 8 and the ma
 
 ## Issues
 
-A node could be an RDC, a CS or a null node that does not open any centers, however, our model only allows a node to be either a RDC or a CS. We attempt to fix the problem by adding the deviation term $\delta$, and let the model optimize for infeasibility. Unfortunately, the model still goes infeasible under conditions that the numbers of CS and RDC do not sum to the total number of candidate nodes ( $|J|$ ).
+A node could be an RDC, a CS or a null node that does not open any centers, however, it seems our stochastic model in Gurobi only allows a node to be either a RDC or a CS. We have attempted to fix the problem by adding the deviation term $\delta$ to let the model optimize allowing infeasibility. Unfortunately, the model still goes infeasible every time under constraints such that number of CS and of RDC do not sum to the total number of candidate nodes ( $|J|$ ). We suspect that the issue is rooted in the constraints of $\alpha_j$ and $\beta_j$; to be specific, in the Control Balance Equation constraint.
 
 ## Conclusion
 
