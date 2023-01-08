@@ -14,7 +14,7 @@ Team B
 ## Table of Contents
 
 1. [Introduction](#Introduction)  
-    1.1 [Background: Disaster Relief Logistics](#Background:-Disaster-Relief-Logistics)  
+    1.1 [Background: Disaster Relief Logistics](#background-disaster-relief-logistics)  
     1.2 [Abbreviation](#Abbreviations)  
     1.3 [Motivation](#Motivation)  
     1.4 [Problem Definition](#Problem-Definition)
@@ -26,7 +26,7 @@ Team B
     3.2 [Implementation Details](#Implementation-Details)  
     3.3 [Result Analysis](#Result-Analysis)  
     3.4 [Weight Analysis](#weight-analysis)  
-    3.5 [Constraint on Number of CS/RDC Analysis](#Constraint-on-Number-of-CS/RDC-Analysis)
+    3.5 [Constraint on Number of CS/RDC Analysis](#constraint-on-number-of-csrdc-analysis)
 4. [Issues](#Issues)
 5. [Conclusion](#Conclusion)
 6. [References](#References)
