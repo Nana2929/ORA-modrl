@@ -202,7 +202,7 @@ $$\min wObj_1 + (1 - w)Obj_2$$
 
 
 #### Lp-Metric Method
-The Lp-metric method aims to reduce the digression btween objective functions and their ideal solution obtained by indiviually optimizing them. In order to obtain the ${Obj^*}$, we need to solve the problem with only one objective at a time (optimize twice) and then plug in the ${Obj^*}$ values, so there's 3 times of optimization in total.
+The Lp-metric method aims to reduce the digression btween objective functions and their ideal solution obtained by indiviually optimizing them. In order to obtain the $Obj^* $, we need to solve the problem with only one objective at a time (optimize twice) and then plug in the $Obj^*$ values, so there's 3 times of optimization in total.
 
 $$\min w \frac{Obj_1 - {Obj_1}^* }{{Obj_1}^* } + (1 - w)\frac{Obj_2 - {Obj_2}^* }{{Obj_2}^* }$$
 
@@ -342,8 +342,8 @@ As for the single-objectives, it's clear that objective 1 and 2 have a trade-off
   <figcaption>Table 11. Stochastic lp-metrics and weighted-sum objective statistics</figcaption>
 </figure>
 
-**[In response to Professor's question]**
-We notice that there's a small peak between $w = 0.4 $ and $0.5$ in the stochastic and Lp-metric setting. From table 11, we know that it is because there's a sudden surge in objective 2 from around $1,864$ to $2,002$ for this $0.1$ weight step (for previous step of $0.1$-unit increase, objective 2 roughly increases $100$ only), and therefore the objective 2's digression becomes so great that the lp-metric combined objective is raised up temporarily, resulting in the small peak.
+**[In Response to Professor Li's Question]**
+We notice that there's a small peak between $w = 0.4$ and $0.5$ in the stochastic and Lp-metric setting. From table 11, we know that it is because there's a sudden surge in objective 2 from around $1,864$ to $2,002$ for this $0.1$ weight gap (for previous $0.1$-unit increase in $w$, objective 2 roughly increases $100$), and therefore we conclude objective 2's digression becomes so great that the lp-metric combined objective is raised up temporarily, hence the small peak.
 
 
 
