@@ -2,7 +2,7 @@
 
 import pandas as pd
 from gurobipy import *
-from util import to_range, DATA_PATH, FIG_PATH, getSupplierAADistance, OptimizationMethod
+from util import to_range, DATA_PATH, FIG_PATH, RESULT_PATH, getSupplierAADistance, OptimizationMethod
 from typing import List
 import matplotlib.pyplot as plt
 
@@ -63,10 +63,13 @@ PARAMETER = dict(
     RHOi=0.26   # fraction of stocked material of commodity `c` remains usable at supplier `i` (0 <= RHOi <= 1)
 )
 
+# =====================================================
 
 def solve(weight=0.01,
         opt_method=OptimizationMethod.WEIGHTED_SUM,
-        single_objval:List[float]=[0,0]):
+        single_objval:List[float]=[0,0],
+        GAMMA = 100 ,
+        delta_term = True):
 
     # supplier -> RDC / CS -> AA
     model = Model('Disaster relief logistic model: Deterministic')
@@ -94,6 +97,9 @@ def solve(weight=0.01,
     alpha = model.addVars(j, vtype=GRB.BINARY, name='alpha')
     # if j is a CS
     beta = model.addVars(j, vtype=GRB.BINARY, name='beta')
+
+    delta = model.addVars(j, c, vtype=GRB.CONTINUOUS, name='delta')
+
 
     # defined for linearize or Gurobi limited
     # reference: https://support.gurobi.com/hc/en-us/community/posts/4408734183185-TypeError-unsupported-operand-type-s-for-int-and-GenExpr-
@@ -124,6 +130,10 @@ def solve(weight=0.01,
     # single objective 1 -> 9631.5
     # single objective 2 -> 567631.946 (setObjectiveN -> model.objVal) or 586.3 (best value)
     obj1 = SC + TC + TCs + TCRCs + ICs + SCs
+    if delta_term:
+        obj1_delta_term = GAMMA * quicksum(delta[j, c] for j in to_range(SET['J'])
+                                           for c in to_range(SET['C']))
+        obj1 = obj1 + obj1_delta_term
     obj2 = quicksum(b_linearize)
     if opt_method == OptimizationMethod.WEIGHTED_SUM:
         model.setObjectiveN(obj1, index=0, weight=W1, name='Cost')
@@ -223,14 +233,14 @@ def solve(weight=0.01,
     print(f'Objective value: {model.objVal}')
     print(f'Objective 1 value: {obj1.getValue()}')
     print(f'Objective 2 value: {obj2.getValue()}')
-    return model, obj1.getValue(), obj2.getValue()
+    return model, obj1, obj2
 
 #%%
 
 def draw(optimize_method: str):
 
     # weight range
-    weights = [0.1 * i for i in range(1, 11)]
+    weights = [0.1 * i for i in range(11)]
     # matplotlib settings
     ax1_color = 'dodgerblue'
     ax1_color2 = 'steelblue'
@@ -238,29 +248,30 @@ def draw(optimize_method: str):
     msize = 12
     title = f'Deterministic model\'s objective value under different weight ({optimize_method})'
     figname =  f'/dm_{optimize_method}.png'
-    statname = f'/statistics/dm_{optimize_method}.txt'
+    statname = f'/statistics/dm_{optimize_method}.csv'
     if optimize_method == 'weighted-sum':
         solvers = [solve(w, OptimizationMethod.WEIGHTED_SUM) for w in weights]
         # weighted Objs
-        wObjs = [weights[i] * solvers[i][1] + (1-weights[i]) * solvers[i][2] for i in to_range(weights)]
+        wObjs = [weights[i] * solvers[i][1].getValue()
+        + (1-weights[i]) * solvers[i][2].getValue() for i in to_range(weights)]
 
     elif optimize_method == 'lp-metric':
         m, obj1, obj2 = solve(1, OptimizationMethod.WEIGHTED_SUM)
-        obj1_star = obj1
+        obj1_star = obj1.getValue()
         m, obj1, obj2 = solve(0, OptimizationMethod.WEIGHTED_SUM)
-        obj2_star = obj2
+        obj2_star = obj2.getValue()
         objstars = [obj1_star, obj2_star]
 
         solvers = [solve(w, OptimizationMethod.LP_METRIC,
                     objstars) for w in weights]
         # note that in lp-metrics, we need (Obj - Obj*) / Obj* instead of native Obj
-        Obj1_s = [(s[1] - obj1_star) / obj1_star for s in solvers]
-        Obj2_s = [(s[2] - obj2_star) / obj2_star for s in solvers]
+        Obj1_s = [(s[1].getValue()  - obj1_star) / obj1_star for s in solvers]
+        Obj2_s = [(s[2].getValue() - obj2_star) / obj2_star for s in solvers]
         # lp-metric Objs
         wObjs = [weights[i] * Obj1_s[i] + (1-weights[i]) * Obj2_s[i] for i in to_range(weights)]
 
-    Obj1s = [s[1] for s in solvers]
-    Obj2s = [s[2] for s in solvers]
+    Obj1s = [s[1].getValue() for s in solvers]
+    Obj2s = [s[2].getValue() for s in solvers]
     # 1/2 subplots, double y-axis
     fig, ax1 = plt.subplots()
     # drawing the obj1, obj2 in ax1 (greater numeric scale)
@@ -294,31 +305,24 @@ def draw(optimize_method: str):
     plt.savefig(FIG_PATH + figname)
     plt.show()
      # saving stats
-    with open(FIG_PATH + statname, 'w') as f:
-        if optimize_method == 'lp-metric':
-            f.write(f'Obj1*: {obj1_star}, Obj2*: {obj2_star} \n\n')
-        for wid, w in enumerate(weights):
-            o1 = round(Obj1s[wid], 4)
-            o2 = round(Obj2s[wid], 4)
-            o3 = round(wObjs[wid], 4)
-            f.write(f'w: {w}, Obj1: {o1}, Obj2: {o2}, {optimize_method}: {o3} \n')
-
+    columns = ['w', 'Obj1', 'Obj2', optimize_method]
+    rows = {}
+    if optimize_method == 'lp-metric':
+       rows['*'] = [obj1_star, obj2_star, '', '']
+    for wid, w in enumerate(weights):
+        o1 = round(Obj1s[wid], 4)
+        o2 = round(Obj2s[wid], 4)
+        o3 = round(wObjs[wid], 4)
+        # message = f'w: {w}, Obj1: {o1}, Obj2: {o2}, {optimize_method}: {o3} \n'
+        row = [w, o1, o2, o3]
+        rows[wid] = row
+    sp_table = pd.DataFrame.from_dict(rows,
+                orient='index',
+                columns=columns)
+    sp_table.to_csv(RESULT_PATH + statname)
 
 #%%
 draw('lp-metric')
-'''
-LpObjs =
-[0.9892620596706254,
- 0.8917457998538403,
- 0.7802775748721102,
- 0.6688093498903802,
- 0.5573411249086927,
- 0.44587289992695406,
- 0.33440467494521553,
- 0.22293644996347703,
- 0.11146822498173851,
- 0.0]
-'''
 #%%
 draw('weighted-sum')
 
