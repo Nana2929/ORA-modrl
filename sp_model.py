@@ -1,7 +1,7 @@
 # %%
 import pandas as pd
 from gurobipy import *
-from util import to_range, DATA_PATH, FIG_PATH, getSupplierAADistance, OptimizationMethod
+from util import to_range, DATA_PATH, FIG_PATH, RESULT_PATH, getSupplierAADistance, OptimizationMethod
 from typing import List
 import matplotlib.pyplot as plt
 
@@ -75,7 +75,9 @@ PARAMETER = dict(
 
 def solve(weight=0.1,
           opt_method=OptimizationMethod.LP_METRIC,
-          single_objval: List[float] = [0, 0], eps=[7, 15 - 7], GAMMA=100, delta_term=True):
+          single_objval: List[float] = [0, 0], eps=[7, 15 - 7],
+          GAMMA=100,
+          delta_term=True):
     # supplier -> RDC / CS -> AA
     model = Model('Disaster relief logistic model: Discrete Stochastic')
     model.ModelSense = GRB.MINIMIZE
@@ -267,7 +269,7 @@ def solve(weight=0.1,
 
 def draw(optimize_method: str):
     # weight range
-    weights = [0.1 * i for i in range(1, 11)]
+    weights = [0.1 * i for i in range(11)]
     # matplotlib settings
     ax1_color = 'dodgerblue'
     ax1_color2 = 'steelblue'
@@ -277,7 +279,6 @@ def draw(optimize_method: str):
     # stochastic prefix
     title = f'Stochastic model\'s objective value under different weight ({optimize_method})'
     figname = f'/sp_{optimize_method}.png'
-    statname = f'/statistics/dm_{optimize_method}.txt'
 
     if optimize_method == 'weighted-sum':
         solvers = [solve(w, OptimizationMethod.WEIGHTED_SUM) for w in weights]
@@ -336,14 +337,24 @@ def draw(optimize_method: str):
     plt.show()
 
     # saving stats
-    with open(FIG_PATH + statname, 'w') as f:
-        if optimize_method == 'lp-metric':
-            f.write(f'Obj1*: {obj1_star}, Obj2*: {obj2_star} \n\n')
-        for wid, w in enumerate(weights):
-            o1 = round(Obj1s[wid], 4)
-            o2 = round(Obj2s[wid], 4)
-            o3 = round(wObjs[wid], 4)
-            f.write(f'w: {w}, Obj1: {o1}, Obj2: {o2}, {optimize_method}: {o3} \n')
+    columns = ['w', 'Obj1', 'Obj2', optimize_method]
+    statname = f'/statistics/sp_{optimize_method}.csv'
+    rows = {}
+    if optimize_method == 'lp-metric':
+       rows['*'] = [obj1_star, obj2_star, '', '']
+    for wid, w in enumerate(weights):
+        o1 = round(Obj1s[wid], 4)
+        o2 = round(Obj2s[wid], 4)
+        o3 = round(wObjs[wid], 4)
+        # message = f'w: {w}, Obj1: {o1}, Obj2: {o2}, {optimize_method}: {o3} \n'
+        row = [w, o1, o2, o3]
+        rows[wid] = row
+    sp_table = pd.DataFrame.from_dict(rows,
+                orient='index',
+                columns=columns)
+    print(sp_table)
+    sp_table.to_csv(RESULT_PATH + statname)
+
 
 
 # %%
