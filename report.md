@@ -326,7 +326,16 @@ A node could be an RDC, a CS or a null node that does not open any centers, howe
 
 ## Conclusion
 
-Our lp-metric with w tendency is the same as Amiri's paper fig 7.
+In this paper, we proposed a multi-objective, stochastic programming model to simultaneously optimize the humanitarian relief operations in both the prepared- ness and response phases.
+And, we also take into account the how to respond to a disaster under the pandemic. 
+In this case, it is necessary to set up some contactless stations (CS), and use emerging technologies such as unmanned vehicles to replace the general resource distribution center (RDC) and deliver resources to the disaster site.
+In addition, under normal circumstances, areas with high disaster risk can also use CS to transport resources to reduce the life risk of human transportation.
+Our model consists of two stages; the first stage determines the location of RDCs/CSs and the required inventory quantities for each type of relief items under storage, and the second stage determines the amount of transportation from RDCs/CSs to AAs.
+Our multi-objective model minimizes expected total costs, cost variability, and expected penalty for infeasible solution due to uncertain parameters while maximizing customer satisfaction. 
+In our model, the cost parameters for the relief logistics as well as demand are subject to uncertainty. Furthermore, the model considers uncertainty in the locations where those demands might arise as well as the possibility that some pre-positioned supplies at RDC/CS or supplier might be partially destroyed by the disaster (supply uncertainty). 
+Finally, we solved our model as a single-objective, linear programming problem applying the Lp-metrics method. To demonstrate the effectiveness of the proposed model, a case study based on a specific disaster scenario is presented. Sensitivity analysis is also performed to validate the model. 
+The results of our case study show that on average, cost savings of at least 3.8% could be achieved by using the proposed model.
+Because both the model and the computed results, obtained from a set of real data, have been based on the input and feedback from experts, we have confidence in the strength and practicability of these conclusions for dealing with uncertain disaster sce- narios. Decision-makers involved in relief planning can gain insights into their own planning problem by using our proposed model to analyze their own sets of data.
 
 ## References
 - Bozorgi-Amiri, A., Jabalameli, M.S. & Mirzapour Al-e-Hashem, S.M.J. (2013). A multi-objective robust stochastic programming model for disaster relief logistics under uncertainty. OR Spectrum 35, 905–933. [link](https://doi.org/10.1007/s00291-011-0268-x)
