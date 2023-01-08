@@ -100,7 +100,7 @@ In brief, we would like to mainly follow Bozorgi-Amiri's paper formulation and m
     - $\pi_{c}$: inventory shortage cost for commdotiy $c$.
     - $v_{c}$: required unit space for commodity $c$.
     - $S_ic$: amount of commodity $c$ supplied by supplier $i$.
-    - M: a large number
+    - $M$: a large number
 
     (Stochastic Parameters)
 
@@ -274,7 +274,7 @@ objective 1 weight = 0.1
 number of CS (epsilon) = 8
 optimization method: Lp-metric
 ```
-As seen in table 1, there are 8 CSs and 7 RDCs opened, which means that each node in candidate node set $J$ must be either a RDC or a CS. It is observed that all of the values in $Q_{ijc}$ are zeros, meaning that none of the commodities are stored in the preparedness phase. All the shippings start from the response phase.
+As seen in table 6, there are 8 CSs and 7 RDCs opened, which means that each node in candidate node set $J$ must be either a RDC or a CS. It is observed that all of the values in $Q_{ijc}$ are zeros, meaning that none of the commodities are stored in the preparedness phase. All the shippings start from the response phase.
 
 <figure>
   <img
@@ -283,7 +283,7 @@ As seen in table 1, there are 8 CSs and 7 RDCs opened, which means that each nod
   <figcaption>Table 6. RDC and CS facility locations </figcaption>
 </figure>
 
-Figure 6 shows . Here we discover that RDC does not receive anything in both phases, so the figure only shows columns of CSs. We could see that the supplier in Sari ships 117 units of food under all scenarios; 39 units of shelter under scneario 3 and 4; 0 water under scneario 1 and 117 units of water under the rest, to the CS in the same province. Averagely speaking, the 3 commdoites sent to the same CS are usually supplied by the same supplier.
+We find that RDC does not receive anything in both phases, so the table only shows columns of CSs. We could see that the supplier in Sari ships 117 units of food under all scenarios; 39 units of shelter under scneario 3 and 4; 0 water under scneario 1 and 117 units of water under the rest, to the CS in the same province. Averagely speaking, the 3 commdoites sent to the same CS are usually supplied by the same supplier.
 
 
 <figure>
@@ -301,10 +301,11 @@ Figure 6 shows . Here we discover that RDC does not receive anything in both pha
   <figcaption>Table 8. The amount of commodity c shipped from RDC/CS j to AA k under scenario s</figcaption>
 </figure>
 
-Figure 7 shows the amount of commodity $c$ shipped from RDC $j$ to AA $k$ under scenario $s$. It is calculated that commodity water and food have 636 units per shipping, while shelter ships 184.24 per shipping. It may be that shelter costs the most for transportation compared to the other 2. Figure 7 and 8 both show that nodes close in distance do interact much more (eg. Supplier Arak supplies Tehran's RDC with food because they are only 10.3 km away from each other; supplier in Sari supplies ts own CS with 3 commodities since they are 0 km away from each other in terms of the distance statistics). Figure 8 shows The amount of commodity $c$ shipped from RDC/CS $j$ to AA $k$ under scenario $s$; Tehran's AA receives the most commdoities; the commdities all come from the closest (within 100 km) RDCs/CSs, including Islamshahr, Shahriar, Sari, etc.
+Table 7 shows the amount of commodity $c$ shipped from RDC $j$ to AA $k$ under scenario $s$. It is calculated that commodity water and food have 636 units per shipping, while shelter ships 184.24 per shipping. It may be that shelter costs the most for transportation compared to the other 2. Table 7 and 8 both show that nodes close in distance do interact much more (eg. Supplier Arak supplies Tehran's RDC with food because they are only 10.3 km away from each other; supplier in Sari supplies ts own CS with 3 commodities since they are 0 km away from each other in terms of the distance statistics). Table 8 shows The amount of commodity $c$ shipped from RDC/CS $j$ to AA $k$ under scenario $s$; Tehran's AA receives the most commdoities; the commdities all come from the closest (within 100 km) RDCs/CSs, including Islamshahr, Shahriar, Sari, etc.
 
 
-Figure 9 and 10 represent the inventory and shortage amount held at AA $k$ under scenario $s$. The inventory balance equation constraint regulates that $I_{kcs} - b_{kcs}$ should equal to the total amount of commdoities sent in minus those in store; holding inventory and having shortage all have a penalty cost exerted on objective 1. We could observed that due to high transportation cost on shelters, the shortage of shelter is prevalent for all AAs and no AAs hold shelter inventory.
+Table 9 and 10 represent the inventory and shortage amount held at AA $k$ under scenario $s$. The inventory balance equation constraint regulates that $I_{kcs} - b_{kcs}$ should equal to the total amount of commdoities sent in minus those in store; holding inventory and having shortage all have a penalty cost exerted on objective 1. We could observed that due to high transportation cost on shelters, the shortage of shelter is prevalent for all AAs and no AAs hold shelter inventory. 
+    
 <figure>
   <img
   src="./figures/results/I_kcs_0.png"
@@ -330,9 +331,10 @@ Figure 9 and 10 represent the inventory and shortage amount held at AA $k$ under
 | Deterministic | ![](./figures/dm_lp-metric.png) | ![](./figures/dm_weighted-sum.png) |
 | Stochastic    | ![](./figures/sp_lp-metric.png) | ![](./figures/sp_weighted-sum.png) |
 
-With single-objective optimization, we can minimize the total costs to $11,950$ ( $10^6\$$ ) and the maximum shortage costs to $1,364$ ( $10^6\$$ ) for stochastic model with Lp-metric. The combined objective of weighted-sum and Lp-metrics are then chosen to use to coordinate the 2 objectives.
+With single-objective optimization, we can minimize the total costs to $17,550$ ( $10^6\$$ ) and the maximum shortage costs to $1,364$ ( $10^6\$$ ) for stochastic model with Lp-metric. The combined objective of weighted-sum and Lp-metric are then chosen to use to coordinate the 2 objectives.
 In terms of the modeling method, the stochastic model gives more fluctuating line than the deterministic one. In terms of the optimization method, the weighted sum gives a very stable tendency; as $w$ increases, objective 1 is placed more weight and therefore the weighted objective grows rapidly. Due to the different numeric scales for both objectives; objective 1 accumulates all costs so it falls around $10^4$, while objective 2 is around $10^3$ (5 times smaller). Therefore, the Lp-metric, which aims to minimize the digression between the objective and its ideal solution, is more suitable for this problem. The overall tendency of the 2 optimization methods are the opposite: as $w$ increases, weighted-sum objective grows, while Lp-metric objective decreases.
-As for the single-objectives, it's clear that objective 1 and 2 have a trade-off in=between. A higher total cost leads to higher satisfaction (less shortage in AAs), and vice versa.
+As for the single-objectives, it's clear that objective 1 and 2 have a trade-off in-between. A higher total cost leads to higher satisfaction (less shortage in AAs), and vice versa.
+    
 <figure>
   <img
   src="./figures/sp-delta-weight-analysis.png"
@@ -341,7 +343,7 @@ As for the single-objectives, it's clear that objective 1 and 2 have a trade-off
 </figure>
 
 **[In response to Professor's question]**
-We notice that there's a small peak between $w = 0.4 $ and $0.5$ in the stochastic and Lp-metric setting. By table 11, we know that it is because there's a sudden surge in objective 2 from around $1,864$ to $2,002$ for this $0.1$ weight step (for previous step of $0.1$-unit increase, objective 2 roughly increases $100$ only), and therefore the objective 2's digression becomes so great that the lp-metric combined objective is raised up temporarily, resulting in the small peak.
+We notice that there's a small peak between $w = 0.4 $ and $0.5$ in the stochastic and Lp-metric setting. From table 11, we know that it is because there's a sudden surge in objective 2 from around $1,864$ to $2,002$ for this $0.1$ weight step (for previous step of $0.1$-unit increase, objective 2 roughly increases $100$ only), and therefore the objective 2's digression becomes so great that the lp-metric combined objective is raised up temporarily, resulting in the small peak.
 
 
 
@@ -364,16 +366,11 @@ A node could be an RDC, a CS or a null node that does not open any centers, howe
 
 ## Conclusion
 
-In this paper, we proposed a multi-objective, stochastic programming model to simultaneously optimize the humanitarian relief operations in both the prepared- ness and response phases.
-And, we also take into account the how to respond to a disaster under the pandemic. 
-In this case, it is necessary to set up some contactless stations (CS), and use emerging technologies such as unmanned vehicles to replace the general resource distribution center (RDC) and deliver resources to the disaster site.
-In addition, under normal circumstances, areas with high disaster risk can also use CS to transport resources to reduce the life risk of human transportation.
-Our model consists of two stages; the first stage determines the location of RDCs/CSs and the required inventory quantities for each type of relief items under storage, and the second stage determines the amount of transportation from RDCs/CSs to AAs.
-Our multi-objective model minimizes expected total costs, cost variability, and expected penalty for infeasible solution due to uncertain parameters while maximizing customer satisfaction. 
+In this paper, we proposed **a multi-objective stochastic programming model to simultaneously optimize the humanitarian relief logistics in both the preparedness and response phases, while taking into account how to respond to disasters under the pandemic.** In our hypothesis, it is necessary to set up contactless stations (CS) and emerging technologies such as unmanned vehicles to replace the original RDC to satisfy contactless delivery for certain AAs that have this requirement. 
+Our model consists of two stages: the first stage determines the locations of RDCs/CSs and the required inventory quantities for each type of relief items under storage, and the second stage determines the amount of transportation from RDCs/CSs to AAs.
+Our multi-objective model minimizes expected total costs and expected penalty for infeasible solution due to uncertain parameters while maximizing customer satisfaction. 
 In our model, the cost parameters for the relief logistics as well as demand are subject to uncertainty. Furthermore, the model considers uncertainty in the locations where those demands might arise as well as the possibility that some pre-positioned supplies at RDC/CS or supplier might be partially destroyed by the disaster (supply uncertainty). 
-Finally, we solved our model as a single-objective, linear programming problem applying the Lp-metrics method. To demonstrate the effectiveness of the proposed model, a case study based on a specific disaster scenario is presented. Sensitivity analysis is also performed to validate the model. 
-The results of our case study show that on average, cost savings of at least 3.8% could be achieved by using the proposed model.
-Because both the model and the computed results, obtained from a set of real data, have been based on the input and feedback from experts, we have confidence in the strength and practicability of these conclusions for dealing with uncertain disaster sce- narios. Decision-makers involved in relief planning can gain insights into their own planning problem by using our proposed model to analyze their own sets of data.
+Finally, we solved our model as a single-objective, mixed-integer programming problem by applying the Lp-metric method. To demonstrate the effectiveness of the proposed model, a case study based on real-world data is presented. Sensitivity analysis is also performed to validate the model. 
 
 ## References
 - Bozorgi-Amiri, A., Jabalameli, M.S. & Mirzapour Al-e-Hashem, S.M.J. (2013). A multi-objective robust stochastic programming model for disaster relief logistics under uncertainty. OR Spectrum 35, 905–933. [link](https://doi.org/10.1007/s00291-011-0268-x)
