@@ -237,6 +237,7 @@ Note that $I$ is a subset of $J$, and $J = K$ in terms of the distance statistic
 </figure>
   <img
   src="./figures/data/rho_remains_usable.png" width="500">
+  
 Table 3. $\rho_{jcs}$ and $\rho_{ics}$; the fraction of stocked materials that remain usable (unit: %).
 
 
